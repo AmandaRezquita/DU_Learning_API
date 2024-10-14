@@ -23,48 +23,55 @@ class StudentController extends Controller
                     'email' => 'required|email|unique:students,email',
                     'password' => 'required|string|max:255',
                     'confirm_password' => 'required|same:password',
-                    'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                    'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+                    'student_avatar_id' => 'required|integer',
                 ]
             );
-
+    
+            if (($request->hasFile('image') && $request->student_avatar_id) || (!$request->hasFile('image') && !$request->student_avatar_id)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'You must provide either an image or an avatar, but not both.',
+                ], 401);
+            }
+    
             if ($validateStudent->fails()) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'validation error',
+                    'message' => 'Validation error',
                     'errors' => $validateStudent->errors()
                 ], 401);
             }
- 
-            $imageName = null;
+    
+            $imageName = null; 
             if ($request->hasFile('image')) {
                 $imageName = Str::random(32) . '.' . $request->image->getClientOriginalExtension();
                 Storage::disk('public')->put($imageName, file_get_contents($request->image));
             }
-
+    
             $student = Student::create([
                 'name' => $request->name,
                 'phone_number' => $request->phone_number,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'confirm_password' => $request->confirm_password,
-                'image' => $imageName,
+                'image' => $imageName, 
+                'student_avatar_id' => $request->student_avatar_id,
             ]);
-
-            Storage::disk('public')->put($imageName, file_get_contents($request->image));
-
+    
             $token = $student->createToken("API TOKEN")->plainTextToken;
-
+    
             $success['name'] = $student->name;
             $success['phone_number'] = $student->phone_number;
             $success['email'] = $student->email;
             $success['image'] = $student->image;
-
-
+            $success['student_avatar_id'] = $student->student_avatar_id;
+    
             return response()->json([
                 'status' => true,
                 'message' => 'Student created successfully',
                 'token' => $token,
-                'data' => $success 
+                'data' => $success
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -73,6 +80,7 @@ class StudentController extends Controller
             ], 500);
         }
     }
+    
 
     public function login(Request $request)
     {
@@ -101,7 +109,7 @@ class StudentController extends Controller
             }
 
             $student = Student::where('email', $request->email)->first();
-            
+
             $token = $student->createToken("API TOKEN")->plainTextToken;
 
             $success['name'] = $student->name;
@@ -110,7 +118,7 @@ class StudentController extends Controller
                 'status' => true,
                 'message' => 'Student logged in successfully',
                 'token' => $token,
-                "data"=> $success
+                "data" => $success
             ], 200);
 
         } catch (\Throwable $th) {
@@ -121,16 +129,18 @@ class StudentController extends Controller
         }
     }
 
-    public function profile(){
-       $studentData = auth()->guard('')->user();
-       return response()->json([
-        'status' => true,
-        'message' => 'Profile Information',
-        'data' => $studentData,
-    ], 200);
+    public function profile()
+    {
+        $studentData = auth()->guard('')->user();
+        return response()->json([
+            'status' => true,
+            'message' => 'Profile Information',
+            'data' => $studentData,
+        ], 200);
     }
 
-    public function logout(){
+    public function logout()
+    {
         auth()->guard('')->user()->tokens()->delete();
         return response()->json([
             'status' => true,

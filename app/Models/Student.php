@@ -26,9 +26,15 @@ class Student extends Authenticatable
         'password',
         'confirm_password',
         'image',
+        'student_avatar_id',
     ];
 
     public $timestamps = false;
+
+    public function avatar()
+    {
+        return $this->belongsTo(StudentAvatar::class, 'avatar_id');
+    }
 
     /**
      * The attributes that should be hidden for serialization.
