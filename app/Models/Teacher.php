@@ -23,12 +23,18 @@ class Teacher extends Authenticatable
          'name',
          'phone_number',
          'email',
+         'username',
          'password',
-         'confirm_password',
          'image',
+         'teacher_avatar_id',
      ];
  
      public $timestamps = false;
+
+     public function avatar()
+     {
+        return $this->belongsTo(TeacherAvatar::class, 'avatar_id');
+     }
  
      /**
       * The attributes that should be hidden for serialization.

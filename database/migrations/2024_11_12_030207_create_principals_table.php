@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\PrincipalAvatar;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,14 +12,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('institutions', function (Blueprint $table) {
+        Schema::create('principals', function (Blueprint $table) {
             $table->id();
             $table->string("name");
             $table->string("phone_number");
             $table->string("email");
+            $table->string("username");
             $table->string("password");
-            $table->string("confirm_password");
-            $table->string("image");
+            $table->string("image")->nullable();
+            $table->foreignIdFor(PrincipalAvatar::class)->nullable();
         });
     }
 
@@ -27,8 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('institutions');
-        Schema::dropIfExists('password_reset_tokens');
-        Schema::dropIfExists('sessions');
+        Schema::dropIfExists('principals');
     }
 };

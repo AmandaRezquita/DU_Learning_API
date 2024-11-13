@@ -40,6 +40,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'school' => [
+            'driver' => 'session',
+            'provider' => 'schools',
+        ],
         'student' => [
             'driver' => 'session',
             'provider' => 'students',
@@ -48,9 +52,9 @@ return [
             'driver' => 'session',
             'provider' => 'teachers',
         ],
-        'institution' => [
+        'principal' => [
             'driver' => 'session',
-            'provider' => 'institutions',
+            'provider' => 'principals',
         ],
     ],
 
@@ -77,6 +81,11 @@ return [
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
 
+        'schools' => [
+            'driver' => 'eloquent',
+            'model' => env('AUTH_MODEL', App\Models\School::class),
+        ],
+
         'students' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\Student::class),
@@ -87,9 +96,9 @@ return [
             'model' => env('AUTH_MODEL', App\Models\Teacher::class),
         ],
 
-        'institutions' => [
+        'principals' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\Institution::class),
+            'model' => env('AUTH_MODEL', App\Models\Principal::class),
         ],
 
 

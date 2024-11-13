@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\TeacherAvatar;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -15,10 +16,12 @@ return new class extends Migration
             $table->id();
             $table->string("name");
             $table->string("phone_number");
-            $table->string("email");
+            $table->string("email")->unique();
+            $table->string("username");
             $table->string("password");
-            $table->string("confirm_password");
-            $table->string("image");
+            $table->string("image")->nullable();
+            $table->foreignIdFor(TeacherAvatar::class)->nullable();
+
         });
     }
 

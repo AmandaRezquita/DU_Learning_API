@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\SchoolController;
+use App\Http\Controllers\StudentAvatarController;
 use App\Http\Controllers\TeacherController;
+use App\Http\Controllers\ViewController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StudentController;
@@ -18,6 +21,9 @@ Route::post("institutionRegis",[TeacherController::class, "register"]);
 
 Route::post("institutionLogin",[TeacherController::class, "login"]);
 
+Route::post("Login",[SchoolController::class, "login"]);
+
+
 Route::group([
     "middleware" => ["auth:sanctum"]
 ], function(){
@@ -28,6 +34,9 @@ Route::group([
     Route::get("institutionProfile",[TeacherController::class,"profile"]);
     Route::get("institutionLogout",[TeacherController::class,"logout"]);
 });
+
+Route::get('studentAvatar', [StudentAvatarController::class, 'getAvatars']);
+
 
 
 // Route::get('/user', function (Request $request) {

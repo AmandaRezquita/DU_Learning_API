@@ -17,10 +17,10 @@ return new class extends Migration
             $table->string("name");
             $table->string("phone_number");
             $table->string("email");
+            $table->string("username");
             $table->string("password");
-            $table->string("confirm_password");
-            $table->string("image");
-            $table->foreignIdFor(StudentAvatar::class);
+            $table->string("image")->nullable();
+            $table->foreignIdFor(StudentAvatar::class)->nullable();
         });
     }
 
