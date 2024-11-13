@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\PrincipalImport;
+use App\Mail\sendPrincipalEmail;
 use App\Models\Principal;
 use Auth;
 use Hash;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Mail;
 use Storage;
 use Str;
 use Validator;
@@ -149,5 +153,42 @@ class PrincipalController extends Controller
             'message' => 'User logged out successfully',
             'data' => [],
         ], 200);
+    }
+
+    protected function handleRecordCreation(array $data): Principal
+    {
+        $username = str()->random(8);
+        $password = str()->random(8);
+
+        $data['username'] = $username;
+        $data['password'] = Hash::make($password);
+
+        $principal = Principal::create($data);
+
+        Mail::to($data['email'])->send(new sendPrincipalEmail($username, $password));
+
+        return $principal;
+    }
+
+    public function importExcelData(Request $request){
+        $request->validate([
+            'import_file' => [
+                'required',
+                'file'  
+            ],
+        ]);
+        
+        $importedData = Excel::toArray(new PrincipalImport , $request->file('import_file'));
+
+        foreach ($importedData[0] as $row) {
+            $data = [
+                'name' => $row[0],
+                'phone_number' => $row[1],
+                'email' => $row[2],
+                'principal_avatar_id' => $row[3]
+            ];
+            $this->handleRecordCreation($data);
+        }
+        return redirect()->back()->with('Success','Import Success');
     }
 }
