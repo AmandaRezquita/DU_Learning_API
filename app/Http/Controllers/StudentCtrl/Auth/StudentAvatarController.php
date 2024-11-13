@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\StudentCtrl\Auth;
 
-use App\Models\StudentAvatar;
+use App\Http\Controllers\Controller;
+use App\Models\Student\Auth\StudentAvatar;
 use Illuminate\Http\Request;
 
 class StudentAvatarController extends Controller

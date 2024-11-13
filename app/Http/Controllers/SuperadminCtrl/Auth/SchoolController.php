@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
-use App\Models\School;
+namespace App\Http\Controllers\SuperadminCtrl\Auth;
+use App\Http\Controllers\Controller;
+use App\Models\Superadmin\Auth\School;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;

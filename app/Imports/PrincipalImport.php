@@ -2,7 +2,7 @@
 
 namespace App\Imports;
 
-use App\Models\Principal;
+use App\Models\Principal\Auth\Principal;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 

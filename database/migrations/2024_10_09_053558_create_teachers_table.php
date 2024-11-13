@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\TeacherAvatar;
+use App\Models\Teacher\Auth\TeacherAvatar;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

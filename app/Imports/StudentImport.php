@@ -2,7 +2,7 @@
 
 namespace App\Imports;
 
-use App\Models\Student;
+use App\Models\Student\Auth\Student;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 

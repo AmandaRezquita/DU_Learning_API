@@ -1,12 +1,12 @@
 <?php
 
-use App\Http\Controllers\SchoolController;
-use App\Http\Controllers\StudentAvatarController;
-use App\Http\Controllers\TeacherController;
-use App\Http\Controllers\ViewController;
-use Illuminate\Http\Request;
+
+use App\Http\Controllers\StudentCtrl\Auth\StudentAvatarController;
+use App\Http\Controllers\StudentCtrl\Auth\StudentController;
+use App\Http\Controllers\SuperadminCtrl\Auth\SchoolController;
+use App\Http\Controllers\TeacherCtrl\Auth\TeacherController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\StudentController;
+
 
 
 Route::post("studentRegis",[StudentController::class, "register"]);

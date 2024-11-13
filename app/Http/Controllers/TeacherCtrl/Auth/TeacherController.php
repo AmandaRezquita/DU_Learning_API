@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\TeacherCtrl\Auth;
 
+use App\Http\Controllers\Controller;
 use App\Imports\TeacherImport;
 use App\Mail\sendTeacherEmail;
 use Illuminate\Http\Request;
-use App\Models\Teacher;
+use App\Models\Teacher\Auth\Teacher;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
