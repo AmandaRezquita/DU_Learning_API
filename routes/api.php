@@ -9,33 +9,37 @@ use Illuminate\Support\Facades\Route;
 
 
 
-Route::post("studentRegis",[StudentController::class, "register"]);
+Route::post("studentRegis", [StudentController::class, "register"]);
 
-Route::post("studentLogin",[StudentController::class, "login"]);
+Route::post("studentLogin", [StudentController::class, "login"]);
 
-Route::post("teacherRegis",[TeacherController::class, "register"]);
+Route::post("teacherRegis", [TeacherController::class, "register"]);
 
-Route::post("teacherLogin",[TeacherController::class, "login"]);
+Route::post("teacherLogin", [TeacherController::class, "login"]);
 
-Route::post("institutionRegis",[TeacherController::class, "register"]);
+Route::post("institutionRegis", [TeacherController::class, "register"]);
 
-Route::post("institutionLogin",[TeacherController::class, "login"]);
+Route::post("institutionLogin", [TeacherController::class, "login"]);
 
-Route::post("Login",[SchoolController::class, "login"]);
+Route::post("Login", [SchoolController::class, "login"]);
 
 
 Route::group([
     "middleware" => ["auth:sanctum"]
-], function(){
-    Route::get("studentProfile",[StudentController::class,"profile"]);
-    Route::get("studentLogout",[StudentController::class,"logout"]);
-    Route::get("teacherProfile",[TeacherController::class,"profile"]);
-    Route::get("teacherLogout",[TeacherController::class,"logout"]);
-    Route::get("institutionProfile",[TeacherController::class,"profile"]);
-    Route::get("institutionLogout",[TeacherController::class,"logout"]);
+], function () {
+    Route::get("studentProfile", [StudentController::class, "profile"]);
+    Route::get("studentLogout", [StudentController::class, "logout"]);
+    Route::get("teacherProfile", [TeacherController::class, "profile"]);
+    Route::get("teacherLogout", [TeacherController::class, "logout"]);
+    Route::get("institutionProfile", [TeacherController::class, "profile"]);
+    Route::get("institutionLogout", [TeacherController::class, "logout"]);
+    Route::get('studentList', [StudentController::class, 'StudentList']);
 });
 
 Route::get('studentAvatar', [StudentAvatarController::class, 'getAvatars']);
+
+
+
 
 
 

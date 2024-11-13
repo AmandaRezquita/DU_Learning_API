@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Student\Auth\Student;
 use Illuminate\Http\Request;
 
 class ViewController extends Controller
 {
     public function index(){
-        return view('student.index');
+        $student = Student::all();
+        return view('student.index', compact('student'));
     }
 }

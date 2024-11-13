@@ -13,6 +13,29 @@
                         <button type="submit" class="btn btn-primary">Import</button>
                     </form>
                 </div>
+
+                <hr>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Phone Number</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody> 
+                        @foreach ( $student as $item )
+                        <tr>
+                            <td>{{$item->id}}</td>
+                            <td>{{$item->name}}</td>
+                            <td>{{$item->phone_number}}</td>
+                            <td>{{$item->email}}</td>
+                        </tr>                        
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

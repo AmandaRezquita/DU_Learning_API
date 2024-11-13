@@ -17,6 +17,22 @@ use Storage;
 
 class StudentController extends Controller
 {
+    public function StudentList(){
+        try {
+            $studentList = Student::all();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Avatars retrieved successfully',
+                'data' => $studentList
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage(),
+            ], 500);
+        }
+    }
     public function register(Request $request)
     {
         try {

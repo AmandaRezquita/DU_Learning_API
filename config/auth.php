@@ -83,22 +83,22 @@ return [
 
         'schools' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\School::class),
+            'model' => env('AUTH_MODEL', App\Models\Superadmin\Auth\School::class),
         ],
 
         'students' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\Student::class),
+            'model' => env('AUTH_MODEL', App\Models\Student\Auth\Student::class),
         ],
 
         'teachers' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\Teacher::class),
+            'model' => env('AUTH_MODEL', App\Models\Teacher\Auth\Teacher::class),
         ],
 
         'principals' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\Principal::class),
+            'model' => env('AUTH_MODEL', App\Models\Principal\Auth\Principal::class),
         ],
 
 
