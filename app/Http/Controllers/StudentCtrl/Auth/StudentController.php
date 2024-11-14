@@ -45,6 +45,7 @@ class StudentController extends Controller
                     'email' => 'required|email|unique:students,email',
                     'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
                     'student_avatar_id' => 'nullable|integer',
+                    'role_id' => 'required|integer'
                 ]
             );
 
@@ -75,6 +76,7 @@ class StudentController extends Controller
                 'email' => $request->email,
                 'image' => $imageName,
                 'student_avatar_id' => $request->student_avatar_id,
+                'role_id' => $request->role_id,
             ];
 
             $student = $this->handleRecordCreation($data);
@@ -86,6 +88,7 @@ class StudentController extends Controller
             $success['email'] = $student->email;
             $success['image'] = $student->image;
             $success['student_avatar_id'] = $student->student_avatar_id;
+            $success['role_id'] = $student->role_id;
 
             return response()->json([
                 'status' => true,
@@ -101,58 +104,9 @@ class StudentController extends Controller
         }
     }
 
-    public function login(Request $request)
-    {
-        try {
-            $validateStudent = Validator::make(
-                $request->all(),
-                [
-                    'username' => 'required',
-                    'password' => 'required'
-                ]
-            );
-
-            if ($validateStudent->fails()) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'validation error',
-                    'errors' => $validateStudent->errors()
-                ], 401);
-            }
-
-            if (!Auth::guard('student')->attempt($request->only(['username', 'password']))) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Username atau Password yang dimasukan salah',
-                ], 401);
-            }
-
-            $student = Student::where('username', $request->username)->first();
-
-            $token = $student->createToken("API TOKEN")->plainTextToken;
-
-            $success['name'] = $student->name;
-            $success['email'] = $student->email;
-
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Student logged in successfully',
-                'token' => $token,
-                "data" => $success
-            ], 200);
-
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'errors' => $th->getMessage()
-            ], 500);
-        }
-    }
-
     public function profile()
     {
-        $studentData = auth()->guard('')->user();
+        $studentData = auth()->user();
         return response()->json([
             'status' => true,
             'message' => 'Profile Information',
@@ -214,7 +168,7 @@ class StudentController extends Controller
 
     public function logout()
     {
-        auth()->guard('')->user()->tokens()->delete();
+        auth()->user()->tokens()->delete();
         return response()->json([
             'status' => true,
             'message' => 'User logged out successfully',

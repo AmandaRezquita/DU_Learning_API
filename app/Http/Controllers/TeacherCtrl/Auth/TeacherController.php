@@ -44,6 +44,8 @@ class TeacherController extends Controller
                     'phone_number' => 'required|string|max:255',
                     'email' => 'required|email|unique:teachers,email',
                     'image' => 'nullable|string',
+                    'teacher_avatar_id' => 'nullable|integer',
+                    'role_id' => 'required|integer',
                 ]
             );
 
@@ -60,6 +62,8 @@ class TeacherController extends Controller
                 'phone_number' => $request->phone_number,
                 'email' => $request->email,
                 'image' => $request->image,
+                'teacher_avatar_id' => $request->teacher_avatar_id,
+                'role_id' => $request->role_id,
             ];
 
             $teacher = $this->handleRecordCreation($data);
@@ -70,6 +74,8 @@ class TeacherController extends Controller
             $success['phone_number'] = $teacher->phone_number;
             $success['email'] = $teacher->email;
             $success['image'] = $teacher->image;
+            $success['teacher_avatar_id'] = $teacher->teacher_avatar_id;
+            $success['role_id'] = $teacher->role_id;
 
 
             return response()->json([
@@ -78,53 +84,6 @@ class TeacherController extends Controller
                 'token' => $token,
                 'data' => $success
             ], 200);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'errors' => $th->getMessage()
-            ], 500);
-        }
-    }
-
-    public function login(Request $request)
-    {
-        try {
-            $validateTeacher = Validator::make(
-                $request->all(),
-                [
-                    'username' => 'required',
-                    'password' => 'required'
-                ]
-            );
-
-            if ($validateTeacher->fails()) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'validation error',
-                    'errors' => $validateTeacher->errors()
-                ], 401);
-            }
-
-            if (!Auth::guard('teacher')->attempt($request->only(['username', 'password']))) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Username atau Password yang dimasukan salah',
-                ], 401);
-            }
-
-            $teacher = Teacher::where('username', $request->username)->first();
-
-            $token = $teacher->createToken("API TOKEN")->plainTextToken;
-
-            $success['name'] = $teacher->name;
-
-            return response()->json([
-                'status' => true,
-                'message' => 'User logged in successfully',
-                'token' => $token,
-                "data" => $success
-            ], 200);
-
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,

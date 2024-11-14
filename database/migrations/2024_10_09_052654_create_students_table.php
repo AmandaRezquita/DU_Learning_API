@@ -1,12 +1,12 @@
 <?php
 
+use App\Models\Role;
 use App\Models\Student\Auth\StudentAvatar;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -20,7 +20,8 @@ return new class extends Migration
             $table->string("username");
             $table->string("password");
             $table->string("image")->nullable();
-            $table->foreignIdFor(StudentAvatar::class)->nullable();
+            $table->foreignId('student_avatar_id')->nullable()->constrained('student_avatars');
+            $table->foreignId('role_id')->constrained('roles');
         });
     }
 

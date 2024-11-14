@@ -20,8 +20,8 @@ return new class extends Migration
             $table->string("username");
             $table->string("password");
             $table->string("image")->nullable();
-            $table->foreignIdFor(TeacherAvatar::class)->nullable();
-
+            $table->foreignId('teacher_avatar_id')->nullable()->constrained('teacher_avatars');
+            $table->foreignId('role_id')->constrained('roles');
         });
     }
 

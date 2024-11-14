@@ -2,7 +2,9 @@
 
 
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\PrincipalCtrl\Auth\PrincipalAvatarController;
 use App\Http\Controllers\PrincipalCtrl\Auth\PrincipalController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StudentCtrl\Auth\StudentAvatarController;
 use App\Http\Controllers\StudentCtrl\Auth\StudentController;
 use App\Http\Controllers\StudentCtrl\Profile\StudentProfile;
@@ -10,6 +12,9 @@ use App\Http\Controllers\SuperadminCtrl\Auth\SchoolController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherAvatarController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherController;
 use Illuminate\Support\Facades\Route;
+
+
+Route::get('roles', [RoleController::class, 'GetRoles']);
 
 Route::prefix('student/')->group(function () {
     Route::post("regis", [StudentController::class, "register"]);
@@ -23,7 +28,13 @@ Route::prefix('teacher/')->group(function () {
     Route::get('avatar', [TeacherAvatarController::class, 'getAvatars']);
 });
 
-Route::post("Login", [SchoolController::class, "login"]);
+Route::prefix('principal/')->group(function () {
+    Route::post("regis", [PrincipalController::class, "register"]);
+    Route::post("login", [PrincipalController::class, "login"]);
+    Route::get('avatar', [PrincipalAvatarController::class, 'getAvatars']);
+});
+
+Route::post("Login", [LoginController::class, "login"]);
 
 Route::group([
     "middleware" => ["auth:sanctum"]
@@ -46,7 +57,15 @@ Route::group([
         Route::get("logout", [TeacherController::class, "logout"]);
         Route::post('importExcel', [TeacherController::class,'importExcelData']);
     });
-    Route::put('principalEdit', [PrincipalController::class, 'updateProfile']);
+
+    Route::prefix('principal/')->group(function () {
+        Route::get('list', [PrincipalController::class, 'TeacherList']);
+        Route::get("profile", [PrincipalController::class, "profile"]);
+        Route::put('edit', [PrincipalController::class, 'updateProfile']);
+        Route::delete('delete', [PrincipalController::class, 'deleteAccount']);
+        Route::get("logout", [PrincipalController::class, "logout"]);
+        Route::post('importExcel', [PrincipalController::class,'importExcelData']);
+    });
 });
 
 

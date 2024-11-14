@@ -2,6 +2,7 @@
 
 namespace App\Models\Teacher\Auth;
 
+use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +28,7 @@ class Teacher extends Authenticatable
          'password',
          'image',
          'teacher_avatar_id',
+         'role_id',
      ];
  
      public $timestamps = false;
@@ -35,6 +37,11 @@ class Teacher extends Authenticatable
      {
         return $this->belongsTo(TeacherAvatar::class, 'avatar_id');
      }
+
+     public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
      
  
      /**

@@ -2,6 +2,7 @@
 
 namespace App\Models\Student\Auth;
 
+use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +20,7 @@ class Student extends Authenticatable
      * @var array<int, string>
      */
 
+    protected $guard = 'student';
     protected $table = 'students';
     protected $fillable = [
         'student_id',
@@ -29,6 +31,7 @@ class Student extends Authenticatable
         'password',
         'image',
         'student_avatar_id',
+        'role_id',
     ];
 
     public $timestamps = false;
@@ -37,6 +40,13 @@ class Student extends Authenticatable
     {
         return $this->belongsTo(StudentAvatar::class, 'avatar_id');
     }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    
 
     /**
      * The attributes that should be hidden for serialization.
