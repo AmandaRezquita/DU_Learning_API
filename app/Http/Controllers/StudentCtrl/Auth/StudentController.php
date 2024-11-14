@@ -17,13 +17,14 @@ use Storage;
 
 class StudentController extends Controller
 {
-    public function StudentList(){
+    public function StudentList()
+    {
         try {
             $studentList = Student::all();
 
             return response()->json([
                 'status' => true,
-                'message' => 'Avatars retrieved successfully',
+                'message' => 'List retrieved successfully',
                 'data' => $studentList
             ], 200);
         } catch (\Throwable $th) {
@@ -42,20 +43,18 @@ class StudentController extends Controller
                     'name' => 'required|string|max:255',
                     'phone_number' => 'required|string|max:255',
                     'email' => 'required|email|unique:students,email',
-                    'username' => 'required|string|max:255',
-                    'password' => 'required|string|max:255',
                     'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
                     'student_avatar_id' => 'nullable|integer',
                 ]
             );
-    
+
             if (($request->hasFile('image') && $request->student_avatar_id) || (!$request->hasFile('image') && !$request->student_avatar_id)) {
                 return response()->json([
                     'status' => false,
                     'message' => 'You must provide either an image or an avatar, but not both.',
                 ], 401);
             }
-    
+
             if ($validateStudent->fails()) {
                 return response()->json([
                     'status' => false,
@@ -63,31 +62,31 @@ class StudentController extends Controller
                     'errors' => $validateStudent->errors()
                 ], 401);
             }
-    
-            $imageName = null; 
+
+            $imageName = null;
             if ($request->hasFile('image')) {
                 $imageName = Str::random(32) . '.' . $request->image->getClientOriginalExtension();
                 Storage::disk('public')->put($imageName, file_get_contents($request->image));
             }
-    
-            $student = Student::create([
+
+            $data = [
                 'name' => $request->name,
                 'phone_number' => $request->phone_number,
                 'email' => $request->email,
-                'username' => $request->username,
-                'password' => Hash::make($request->password),
-                'image' => $imageName, 
+                'image' => $imageName,
                 'student_avatar_id' => $request->student_avatar_id,
-            ]);
-    
+            ];
+
+            $student = $this->handleRecordCreation($data);
+
             $token = $student->createToken("API TOKEN")->plainTextToken;
-    
+
             $success['name'] = $student->name;
             $success['phone_number'] = $student->phone_number;
             $success['email'] = $student->email;
             $success['image'] = $student->image;
             $success['student_avatar_id'] = $student->student_avatar_id;
-    
+
             return response()->json([
                 'status' => true,
                 'message' => 'Student created successfully',
@@ -101,7 +100,6 @@ class StudentController extends Controller
             ], 500);
         }
     }
-    
 
     public function login(Request $request)
     {
@@ -134,6 +132,8 @@ class StudentController extends Controller
             $token = $student->createToken("API TOKEN")->plainTextToken;
 
             $success['name'] = $student->name;
+            $success['email'] = $student->email;
+
 
             return response()->json([
                 'status' => true,
@@ -160,6 +160,58 @@ class StudentController extends Controller
         ], 200);
     }
 
+    
+    public function updateProfile(Request $request)
+    {
+        try {
+            $student = auth()->user();
+
+            if (!$student) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $validateStudent = Validator::make($request->all(), [
+                'email' => 'nullable|email|unique:students,email,' . $student->id,
+                'password' => 'nullable|string|min:8',
+                'phone_number' => 'nullable|string|max:255',
+            ]);
+
+            if ($validateStudent->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validateStudent->errors()
+                ], 401);
+            }
+
+            if ($request->has('email')) {
+                $student->email = $request->email;
+            }
+            if ($request->has('password')) {
+                $student->password = Hash::make($request->password);
+            }
+            if ($request->has('phone_number')) {
+                $student->phone_number = $request->phone_number;
+            }
+
+            $student->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Profile updated successfully',
+                'data' => $student
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'errors' => $th->getMessage()
+            ], 500);
+        }
+    }
+
     public function logout()
     {
         auth()->guard('')->user()->tokens()->delete();
@@ -184,8 +236,10 @@ class StudentController extends Controller
 
         return $student;
     }
+    
 
-    public function importExcelData(Request $request){
+    public function importExcelData(Request $request)
+    {
         $request->validate([
             'import_file' => [
                 'required',
@@ -193,7 +247,7 @@ class StudentController extends Controller
             ],
         ]);
 
-        $importedData = Excel::toArray(new StudentImport , $request->file('import_file'));
+        $importedData = Excel::toArray(new StudentImport, $request->file('import_file'));
 
         foreach ($importedData[0] as $row) {
             $data = [
@@ -205,6 +259,33 @@ class StudentController extends Controller
             $this->handleRecordCreation($data);
         }
 
-        return redirect()->back()->with('Success','Import Success');
+        return redirect()->back()->with('Success', 'Import Success');
+    }
+
+    public function deleteAccount(Request $request)
+    {
+        try {
+            $student = auth()->user();
+
+            if (!$student) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Student not authenticated'
+                ], 401);
+            }
+
+            $student->delete();
+            auth()->guard('student')->logout();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Student account deleted successfully',
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage(),
+            ], 500);
+        }
     }
 }

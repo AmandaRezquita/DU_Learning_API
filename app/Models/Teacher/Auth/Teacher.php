@@ -35,6 +35,7 @@ class Teacher extends Authenticatable
      {
         return $this->belongsTo(TeacherAvatar::class, 'avatar_id');
      }
+     
  
      /**
       * The attributes that should be hidden for serialization.

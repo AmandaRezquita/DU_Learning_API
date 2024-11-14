@@ -15,6 +15,25 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class TeacherController extends Controller
 {
+
+
+    public function TeacherList()
+    {
+        try {
+            $teacherList = Teacher::all();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Avatars retrieved successfully',
+                'data' => $teacherList
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage(),
+            ], 500);
+        }
+    }
     public function register(Request $request)
     {
         try {
@@ -24,8 +43,6 @@ class TeacherController extends Controller
                     'name' => 'required|string|max:255',
                     'phone_number' => 'required|string|max:255',
                     'email' => 'required|email|unique:teachers,email',
-                    'username' => 'required|string|max:255',
-                    'password' => 'required|string|max:255',
                     'image' => 'nullable|string',
                 ]
             );
@@ -38,14 +55,14 @@ class TeacherController extends Controller
                 ], 401);
             }
 
-            $teacher = Teacher::create([
+            $data = [
                 'name' => $request->name,
                 'phone_number' => $request->phone_number,
                 'email' => $request->email,
-                'username' => $request->username,
-                'password' => Hash::make($request->password),
                 'image' => $request->image,
-            ]);
+            ];
+
+            $teacher = $this->handleRecordCreation($data);
 
             $token = $teacher->createToken("API TOKEN")->plainTextToken;
 
@@ -59,7 +76,7 @@ class TeacherController extends Controller
                 'status' => true,
                 'message' => 'Account created successfully',
                 'token' => $token,
-                'data' => $success 
+                'data' => $success
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -96,7 +113,7 @@ class TeacherController extends Controller
             }
 
             $teacher = Teacher::where('username', $request->username)->first();
-            
+
             $token = $teacher->createToken("API TOKEN")->plainTextToken;
 
             $success['name'] = $teacher->name;
@@ -105,7 +122,7 @@ class TeacherController extends Controller
                 'status' => true,
                 'message' => 'User logged in successfully',
                 'token' => $token,
-                "data"=> $success
+                "data" => $success
             ], 200);
 
         } catch (\Throwable $th) {
@@ -116,16 +133,69 @@ class TeacherController extends Controller
         }
     }
 
-    public function profile(){
-       $teacherData = auth()->guard('')->user();
-       return response()->json([
-        'status' => true,
-        'message' => 'Profile Information',
-        'data' => $teacherData,
-    ], 200);
+    public function profile()
+    {
+        $teacherData = auth()->guard('')->user();
+        return response()->json([
+            'status' => true,
+            'message' => 'Profile Information',
+            'data' => $teacherData,
+        ], 200);
     }
 
-    public function logout(){
+    public function updateProfile(Request $request)
+    {
+        try {
+            $teacher = auth()->user();
+
+            if (!$teacher) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $validateTeacher = Validator::make($request->all(), [
+                'email' => 'nullable|email|unique:students,email,' . $teacher->id,
+                'password' => 'nullable|string|min:8',
+                'phone_number' => 'nullable|string|max:255',
+            ]);
+
+            if ($validateTeacher->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validateTeacher->errors()
+                ], 401);
+            }
+
+            if ($request->has('email')) {
+                $teacher->email = $request->email;
+            }
+            if ($request->has('password')) {
+                $teacher->password = Hash::make($request->password);
+            }
+            if ($request->has('phone_number')) {
+                $teacher->phone_number = $request->phone_number;
+            }
+
+            $teacher->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Profile updated successfully',
+                'data' => $teacher
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'errors' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function logout()
+    {
         auth()->guard('')->user()->tokens()->delete();
         return response()->json([
             'status' => true,
@@ -149,15 +219,16 @@ class TeacherController extends Controller
         return $teacher;
     }
 
-    public function importExcelData(Request $request){
+    public function importExcelData(Request $request)
+    {
         $request->validate([
             'import_file' => [
                 'required',
-                'file'  
+                'file'
             ],
         ]);
-        
-        $importedData = Excel::toArray(new TeacherImport , $request->file('import_file'));
+
+        $importedData = Excel::toArray(new TeacherImport, $request->file('import_file'));
 
         foreach ($importedData[0] as $row) {
             $data = [
@@ -168,6 +239,33 @@ class TeacherController extends Controller
             ];
             $this->handleRecordCreation($data);
         }
-        return redirect()->back()->with('Success','Import Success');
+        return redirect()->back()->with('Success', 'Import Success');
+    }
+
+    public function deleteAccount(Request $request)
+    {
+        try {
+            $teacher = auth()->user();
+
+            if (!$teacher) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Student not authenticated'
+                ], 401);
+            }
+
+            $teacher->delete();
+            auth()->guard('teacher')->logout();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Student account deleted successfully',
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage(),
+            ], 500);
+        }
     }
 }
