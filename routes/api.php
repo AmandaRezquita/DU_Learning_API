@@ -34,7 +34,8 @@ Route::prefix('principal/')->group(function () {
     Route::get('avatar', [PrincipalAvatarController::class, 'getAvatars']);
 });
 
-Route::post("Login", [LoginController::class, "login"]);
+Route::post("loginSuperadmin", [SchoolController::class, "login"]);
+Route::post("login", [LoginController::class, "login"]);
 
 Route::group([
     "middleware" => ["auth:sanctum"]

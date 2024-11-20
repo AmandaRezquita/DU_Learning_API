@@ -53,7 +53,7 @@ class StudentController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'You must provide either an image or an avatar, but not both.',
-                ], 401);
+                ], 422);
             }
 
             if ($validateStudent->fails()) {
@@ -138,7 +138,7 @@ class StudentController extends Controller
                     'status' => false,
                     'message' => 'Validation error',
                     'errors' => $validateStudent->errors()
-                ], 401);
+                ], 422);
             }
 
             if ($request->has('email')) {
