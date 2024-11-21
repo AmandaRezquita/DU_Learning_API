@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Student\Auth;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class Student extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasApiTokens;
@@ -18,11 +19,36 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+
+    protected $guard = 'student';
+    protected $table = 'students';
     protected $fillable = [
-        'name',
+        'student_id',
+        'fullname',
+        'nickname',
+        'birth_date',
+        'phone_number',
         'email',
+        'username',
         'password',
+        'image',
+        'student_avatar_id',
+        'role_id',
     ];
+
+    public $timestamps = false;
+
+    public function avatar()
+    {
+        return $this->belongsTo(StudentAvatar::class, 'avatar_id');
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    
 
     /**
      * The attributes that should be hidden for serialization.
@@ -47,3 +73,4 @@ class User extends Authenticatable
         ];
     }
 }
+
