@@ -44,12 +44,12 @@ class LoginController extends Controller
                     'token' => $token,
                     "data" => $success
                 ], 200);
-            }else if(Auth::guard('teacher')->attempt($request->only(['username', 'password']))){
+            } else if (Auth::guard('teacher')->attempt($request->only(['username', 'password']))) {
                 $teacher = Teacher::with('role')->where('username', $request->username)->first();
 
                 $token = $teacher->createToken("API TOKEN")->plainTextToken;
 
-                $success= $teacher;
+                $success = $teacher;
 
                 return response()->json([
                     'status' => true,
@@ -57,27 +57,34 @@ class LoginController extends Controller
                     'token' => $token,
                     "data" => $success
                 ], 200);
-            }else if(Auth::guard('student')->attempt($request->only(['username', 'password']))){
+            } else if (Auth::guard('student')->attempt($request->only(['username', 'password']))) {
                 $student = Student::with('role')->where('username', $request->username)->first();
 
                 $token = $student->createToken("API TOKEN")->plainTextToken;
 
-                $success = $student;
-
+                $success['fullname'] = $student->fullname;
+                $success['nickname'] = $student->nickname;
+                $success['birth_date'] = $student->birth_date;
+                $success['phone_number'] = $student->phone_number;
+                $success['email'] = $student->email;
+                $success['image'] = $student->image;
+                $success['student_avatar_id'] = $student->student_avatar_id;
+                $success['role_id'] = $student->role_id;
+                
                 return response()->json([
                     'status' => true,
                     'message' => 'Student logged in successfully',
                     'token' => $token,
                     "data" => $success
                 ], 200);
-            }else {
+            } else {
                 return response()->json([
                     'status' => false,
                     'message' => 'Username atau Password yang dimasukan salah',
                 ], 401);
             }
 
-            
+
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,

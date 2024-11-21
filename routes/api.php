@@ -37,6 +37,7 @@ Route::prefix('principal/')->group(function () {
 Route::post("loginSuperadmin", [SchoolController::class, "login"]);
 Route::post("login", [LoginController::class, "login"]);
 
+
 Route::group([
     "middleware" => ["auth:sanctum"]
 ], function () {
@@ -44,10 +45,18 @@ Route::group([
     Route::prefix('student/')->group(function () {
         Route::get('list', [StudentController::class, 'StudentList']);
         Route::get("profile", [StudentController::class, "profile"]);
-        Route::put('edit', [StudentController::class, 'updateProfile']);
+
+        Route::prefix('edit/')->group(function () {
+            Route::put('email', [StudentController::class,'edit_email']);
+            Route::put('password', [StudentController::class,'edit_password']);
+            Route::put('username', [StudentController::class,'edit_username']);
+            Route::put('phone_number', [StudentController::class,'edit_phone_number']);
+        });
+
         Route::delete('delete', [StudentController::class, 'deleteAccount']);
         Route::get("logout", [StudentController::class, "logout"]);
-        Route::post('importExcel', [StudentController::class,'importExcelData']);
+        Route::post('import', [StudentController::class,'importExcelData']);
+
     });
 
     Route::prefix('teacher/')->group(function () {
@@ -56,7 +65,7 @@ Route::group([
         Route::put('edit', [TeacherController::class, 'updateProfile']);
         Route::delete('delete', [TeacherController::class, 'deleteAccount']);
         Route::get("logout", [TeacherController::class, "logout"]);
-        Route::post('importExcel', [TeacherController::class,'importExcelData']);
+        Route::post('import', [TeacherController::class,'importExcelData']);
     });
 
     Route::prefix('principal/')->group(function () {
@@ -65,7 +74,7 @@ Route::group([
         Route::put('edit', [PrincipalController::class, 'updateProfile']);
         Route::delete('delete', [PrincipalController::class, 'deleteAccount']);
         Route::get("logout", [PrincipalController::class, "logout"]);
-        Route::post('importExcel', [PrincipalController::class,'importExcelData']);
+        Route::post('import', [PrincipalController::class,'importExcelData']);
     });
 });
 

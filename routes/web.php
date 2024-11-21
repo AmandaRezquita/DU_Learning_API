@@ -13,8 +13,3 @@ Route::get('/', function () {
 Route::get('student/import', [ViewController::class,'index']);
 
 
-
-// Route::post('student/import', [TeacherController::class,'importExcelData']);
-
-// Route::post('student/import', [PrincipalController::class,'importExcelData']);
-

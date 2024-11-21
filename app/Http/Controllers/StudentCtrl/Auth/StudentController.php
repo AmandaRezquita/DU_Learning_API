@@ -40,7 +40,9 @@ class StudentController extends Controller
             $validateStudent = Validator::make(
                 $request->all(),
                 [
-                    'name' => 'required|string|max:255',
+                    'fullname' => 'required|string|max:255',
+                    'nickname' => 'required|string|max:255',
+                    'birth_date' => 'required|string|max:255',
                     'phone_number' => 'required|string|max:255',
                     'email' => 'required|email|unique:students,email',
                     'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -61,7 +63,7 @@ class StudentController extends Controller
                     'status' => false,
                     'message' => 'Validation error',
                     'errors' => $validateStudent->errors()
-                ], 401);
+                ], 422);
             }
 
             $imageName = null;
@@ -71,7 +73,9 @@ class StudentController extends Controller
             }
 
             $data = [
-                'name' => $request->name,
+                'fullname' => $request->fullname,
+                'nickname' => $request->nickname,
+                'birth_date' => $request->birth_date,
                 'phone_number' => $request->phone_number,
                 'email' => $request->email,
                 'image' => $imageName,
@@ -83,7 +87,9 @@ class StudentController extends Controller
 
             $token = $student->createToken("API TOKEN")->plainTextToken;
 
-            $success['name'] = $student->name;
+            $success['fullname'] = $student->fullname;
+            $success['nickname'] = $student->nickname;
+            $success['birth_date'] = $student->birth_date;
             $success['phone_number'] = $student->phone_number;
             $success['email'] = $student->email;
             $success['image'] = $student->image;
@@ -115,7 +121,7 @@ class StudentController extends Controller
     }
 
     
-    public function updateProfile(Request $request)
+    public function edit_email(Request $request)
     {
         try {
             $student = auth()->user();
@@ -129,7 +135,130 @@ class StudentController extends Controller
 
             $validateStudent = Validator::make($request->all(), [
                 'email' => 'nullable|email|unique:students,email,' . $student->id,
-                'password' => 'nullable|string|min:8',
+            ]);
+
+            if ($validateStudent->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validateStudent->errors()
+                ], 422);
+            }
+
+            if ($request->has('email') && $request->email === $student->email) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'The new email cannot be the same as the current email.'
+                ], 422);
+            }
+
+            if ($request->has('email')) {
+                $student->email = $request->email;
+            }
+
+            $student->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'email updated successfully',
+                'data' => $student
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'errors' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function edit_password(Request $request)
+    {
+        try {
+            $student = auth()->user();
+    
+            if (!$student) {
+                return response()->json(['status' => false, 'message' => 'User not authenticated'], 401);
+            }
+    
+            $validateStudent = Validator::make($request->all(), [
+                'current_password' => 'required|string|min:8',
+                'password' => 'required|string|min:8|confirmed',
+            ]);
+    
+            if ($validateStudent->fails()) {
+                return response()->json(['status' => false, 'message' => 'Validation error', 'errors' => $validateStudent->errors()], 422);
+            }
+    
+            if (!Hash::check($request->current_password, $student->password)) {
+                return response()->json(['status' => false, 'message' => 'Current password is incorrect'], 401);
+            }
+    
+            $student->password = Hash::make($request->password);
+            $student->save();
+    
+            return response()->json(['status' => true, 'message' => 'Password updated successfully'], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['status' => false, 'errors' => $th->getMessage()], 500);
+        }
+    }
+    
+
+    public function edit_username(Request $request)
+    {
+        try {
+            $student = auth()->user();
+
+            if (!$student) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $validateStudent = Validator::make($request->all(), [
+                'username' => 'nullable|string|max:255',
+            ]);
+
+            if ($validateStudent->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validateStudent->errors()
+                ], 422);
+            }
+
+            if ($request->has('username')) {
+                $student->username = $request->username;
+            }
+
+            $student->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'username updated successfully',
+                'data' => $student
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'errors' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function edit_phone_number(Request $request)
+    {
+        try {
+            $student = auth()->user();
+
+            if (!$student) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $validateStudent = Validator::make($request->all(), [
                 'phone_number' => 'nullable|string|max:255',
             ]);
 
@@ -141,12 +270,6 @@ class StudentController extends Controller
                 ], 422);
             }
 
-            if ($request->has('email')) {
-                $student->email = $request->email;
-            }
-            if ($request->has('password')) {
-                $student->password = Hash::make($request->password);
-            }
             if ($request->has('phone_number')) {
                 $student->phone_number = $request->phone_number;
             }
@@ -155,7 +278,7 @@ class StudentController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Profile updated successfully',
+                'message' => 'phone number updated successfully',
                 'data' => $student
             ], 200);
         } catch (\Throwable $th) {
@@ -165,14 +288,13 @@ class StudentController extends Controller
             ], 500);
         }
     }
-
+    
     public function logout()
     {
         auth()->user()->tokens()->delete();
         return response()->json([
             'status' => true,
             'message' => 'User logged out successfully',
-            'data' => [],
         ], 200);
     }
 
@@ -205,10 +327,13 @@ class StudentController extends Controller
 
         foreach ($importedData[0] as $row) {
             $data = [
-                'name' => $row[0],
-                'phone_number' => $row[1],
-                'email' => $row[2],
-                'student_avatar_id' => $row[3],
+                'fullname' => $row[0],
+                'nickname' => $row[1],
+                'birth_date' => $row[2]= \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row[2])->format('Y-m-d'),
+                'phone_number' => $row[3],
+                'email' => $row[4],
+                'student_avatar_id' => $row[5],
+                'role_id' => $row[6],
             ];
             $this->handleRecordCreation($data);
         }
