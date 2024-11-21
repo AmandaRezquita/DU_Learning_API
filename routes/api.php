@@ -7,6 +7,7 @@ use App\Http\Controllers\PrincipalCtrl\Auth\PrincipalController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StudentCtrl\Auth\StudentAvatarController;
 use App\Http\Controllers\StudentCtrl\Auth\StudentController;
+use App\Http\Controllers\StudentCtrl\Dashboard\TimeGreetingController;
 use App\Http\Controllers\StudentCtrl\Profile\StudentProfile;
 use App\Http\Controllers\SuperadminCtrl\Auth\SchoolController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherAvatarController;
@@ -51,6 +52,10 @@ Route::group([
             Route::put('password', [StudentController::class,'edit_password']);
             Route::put('username', [StudentController::class,'edit_username']);
             Route::put('phone_number', [StudentController::class,'edit_phone_number']);
+        });
+
+        Route::prefix('dashboard/')->group(function () {
+            Route::get('greeting', [TimeGreetingController::class,'greet']);
         });
 
         Route::delete('delete', [StudentController::class, 'deleteAccount']);
