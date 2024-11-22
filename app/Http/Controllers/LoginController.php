@@ -49,7 +49,14 @@ class LoginController extends Controller
 
                 $token = $teacher->createToken("API TOKEN")->plainTextToken;
 
-                $success = $teacher;
+                $success['fullname'] = $teacher->fullname;
+                $success['nickname'] = $teacher->nickname;
+                $success['birth_date'] = $teacher->birth_date;
+                $success['phone_number'] = $teacher->phone_number;
+                $success['email'] = $teacher->email;
+                $success['image'] = $teacher->image;
+                $success['teacher_avatar_id'] = $teacher->teacher_avatar_id;
+                $success['role_id'] = $teacher->role_id;
 
                 return response()->json([
                     'status' => true,
@@ -81,7 +88,7 @@ class LoginController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Username atau Password yang dimasukan salah',
-                ], 401);
+                ], 422);
             }
 
 

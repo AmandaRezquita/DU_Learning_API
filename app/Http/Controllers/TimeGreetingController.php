@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Http\Controllers\StudentCtrl\Dashboard;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class TimeGreetingController extends Controller

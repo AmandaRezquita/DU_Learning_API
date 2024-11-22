@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Mail;
 use Maatwebsite\Excel\Facades\Excel;
+use Storage;
+use Str;
 
 class TeacherController extends Controller
 {
@@ -40,7 +42,9 @@ class TeacherController extends Controller
             $validateTeacher = Validator::make(
                 $request->all(),
                 [
-                    'name' => 'required|string|max:255',
+                    'fullname' => 'required|string|max:255',
+                    'nickname' => 'required|string|max:255',
+                    'birth_date' => 'required|string|max:255',
                     'phone_number' => 'required|string|max:255',
                     'email' => 'required|email|unique:teachers,email',
                     'image' => 'nullable|string',
@@ -49,16 +53,31 @@ class TeacherController extends Controller
                 ]
             );
 
+            if (($request->hasFile('image') && $request->teacher_avatar_id) || (!$request->hasFile('image') && !$request->teacher_avatar_id)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'You must provide either an image or an avatar, but not both.',
+                ], 422);
+            }
+
             if ($validateTeacher->fails()) {
                 return response()->json([
                     'status' => false,
                     'message' => 'validation error',
                     'errors' => $validateTeacher->errors()
-                ], 401);
+                ], 422);
+            }
+
+            $imageName = null;
+            if ($request->hasFile('image')) {
+                $imageName = Str::random(32) . '.' . $request->image->getClientOriginalExtension();
+                Storage::disk('public')->put($imageName, file_get_contents($request->image));
             }
 
             $data = [
-                'name' => $request->name,
+                'fullname' => $request->fullname,
+                'nickname' => $request->nickname,
+                'birth_date' => $request->birth_date,
                 'phone_number' => $request->phone_number,
                 'email' => $request->email,
                 'image' => $request->image,
@@ -70,7 +89,9 @@ class TeacherController extends Controller
 
             $token = $teacher->createToken("API TOKEN")->plainTextToken;
 
-            $success['name'] = $teacher->name;
+            $success['fullname'] = $teacher->fullname;
+            $success['nickname'] = $teacher->nickname;
+            $success['birth_date'] = $teacher->birth_date;
             $success['phone_number'] = $teacher->phone_number;
             $success['email'] = $teacher->email;
             $success['image'] = $teacher->image;
@@ -94,7 +115,7 @@ class TeacherController extends Controller
 
     public function profile()
     {
-        $teacherData = auth()->guard('')->user();
+        $teacherData = auth()->user();
         return response()->json([
             'status' => true,
             'message' => 'Profile Information',
@@ -102,7 +123,7 @@ class TeacherController extends Controller
         ], 200);
     }
 
-    public function updateProfile(Request $request)
+    public function edit_email(Request $request)
     {
         try {
             $teacher = auth()->user();
@@ -115,9 +136,7 @@ class TeacherController extends Controller
             }
 
             $validateTeacher = Validator::make($request->all(), [
-                'email' => 'nullable|email|unique:students,email,' . $teacher->id,
-                'password' => 'nullable|string|min:8',
-                'phone_number' => 'nullable|string|max:255',
+                'email' => 'nullable|email|unique:teachers,email,' . $teacher->id,
             ]);
 
             if ($validateTeacher->fails()) {
@@ -125,24 +144,25 @@ class TeacherController extends Controller
                     'status' => false,
                     'message' => 'Validation error',
                     'errors' => $validateTeacher->errors()
-                ], 401);
+                ], 422);
+            }
+
+            if ($request->has('email') && $request->email === $teacher->email) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'The new email cannot be the same as the current email.'
+                ], 422);
             }
 
             if ($request->has('email')) {
                 $teacher->email = $request->email;
-            }
-            if ($request->has('password')) {
-                $teacher->password = Hash::make($request->password);
-            }
-            if ($request->has('phone_number')) {
-                $teacher->phone_number = $request->phone_number;
             }
 
             $teacher->save();
 
             return response()->json([
                 'status' => true,
-                'message' => 'Profile updated successfully',
+                'message' => 'email updated successfully',
                 'data' => $teacher
             ], 200);
         } catch (\Throwable $th) {
@@ -153,9 +173,128 @@ class TeacherController extends Controller
         }
     }
 
+    public function edit_password(Request $request)
+    {
+        try {
+            $teacher = auth()->user();
+    
+            if (!$teacher) {
+                return response()->json(['status' => false, 'message' => 'User not authenticated'], 401);
+            }
+    
+            $validateTeacher = Validator::make($request->all(), [
+                'current_password' => 'required|string|min:8',
+                'password' => 'required|string|min:8|confirmed',
+            ]);
+    
+            if ($validateTeacher->fails()) {
+                return response()->json(['status' => false, 'message' => 'Validation error', 'errors' => $validateTeacher->errors()], 422);
+            }
+    
+            if (!Hash::check($request->current_password, $teacher->password)) {
+                return response()->json(['status' => false, 'message' => 'Current password is incorrect'], 401);
+            }
+    
+            $teacher->password = Hash::make($request->password);
+            $teacher->save();
+    
+            return response()->json(['status' => true, 'message' => 'Password updated successfully'], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['status' => false, 'errors' => $th->getMessage()], 500);
+        }
+    }
+    
+
+    public function edit_username(Request $request)
+    {
+        try {
+            $teacher = auth()->user();
+
+            if (!$teacher) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $validateTeacher = Validator::make($request->all(), [
+                'username' => 'nullable|string|max:255',
+            ]);
+
+            if ($validateTeacher->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validateTeacher->errors()
+                ], 422);
+            }
+
+            if ($request->has('username')) {
+                $teacher->username = $request->username;
+            }
+
+            $teacher->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'username updated successfully',
+                'data' => $teacher
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'errors' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function edit_phone_number(Request $request)
+    {
+        try {
+            $teacher = auth()->user();
+
+            if (!$teacher) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $validateTeacher = Validator::make($request->all(), [
+                'phone_number' => 'nullable|string|max:255',
+            ]);
+
+            if ($validateTeacher->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validateTeacher->errors()
+                ], 422);
+            }
+
+            if ($request->has('phone_number')) {
+                $teacher->phone_number = $request->phone_number;
+            }
+
+            $teacher->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'phone number updated successfully',
+                'data' => $teacher
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'errors' => $th->getMessage()
+            ], 500);
+        }
+    }
+   
+
     public function logout()
     {
-        auth()->guard('')->user()->tokens()->delete();
+        auth()->user()->tokens()->delete();
         return response()->json([
             'status' => true,
             'message' => 'User logged out successfully',
@@ -191,10 +330,13 @@ class TeacherController extends Controller
 
         foreach ($importedData[0] as $row) {
             $data = [
-                'name' => $row[0],
-                'phone_number' => $row[1],
-                'email' => $row[2],
-                'teacher_avatar_id' => $row[3]
+                'fullname' => $row[0],
+                'nickname' => $row[1],
+                'birth_date' => $row[2]= \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row[2])->format('Y-m-d'),
+                'phone_number' => $row[3],
+                'email' => $row[4],
+                'teacher_avatar_id' => $row[5],
+                'role_id' => $row[6],
             ];
             $this->handleRecordCreation($data);
         }
@@ -209,7 +351,7 @@ class TeacherController extends Controller
             if (!$teacher) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Student not authenticated'
+                    'message' => 'Teacher not authenticated'
                 ], 401);
             }
 
@@ -218,7 +360,7 @@ class TeacherController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Student account deleted successfully',
+                'message' => 'Teacher account deleted successfully',
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
