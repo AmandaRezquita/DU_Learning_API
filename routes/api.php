@@ -7,11 +7,11 @@ use App\Http\Controllers\PrincipalCtrl\Auth\PrincipalController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StudentCtrl\Auth\StudentAvatarController;
 use App\Http\Controllers\StudentCtrl\Auth\StudentController;
-use App\Http\Controllers\StudentCtrl\Dashboard\TimeGreetingController;
 use App\Http\Controllers\StudentCtrl\Profile\StudentProfile;
 use App\Http\Controllers\SuperadminCtrl\Auth\SchoolController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherAvatarController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherController;
+use App\Http\Controllers\TimeGreetingController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -48,29 +48,40 @@ Route::group([
         Route::get("profile", [StudentController::class, "profile"]);
 
         Route::prefix('edit/')->group(function () {
-            Route::put('email', [StudentController::class,'edit_email']);
-            Route::put('password', [StudentController::class,'edit_password']);
-            Route::put('username', [StudentController::class,'edit_username']);
-            Route::put('phone_number', [StudentController::class,'edit_phone_number']);
+            Route::put('email', [StudentController::class, 'edit_email']);
+            Route::put('password', [StudentController::class, 'edit_password']);
+            Route::put('username', [StudentController::class, 'edit_username']);
+            Route::put('phone_number', [StudentController::class, 'edit_phone_number']);
         });
 
         Route::prefix('dashboard/')->group(function () {
-            Route::get('greeting', [TimeGreetingController::class,'greet']);
+            Route::get('greeting', [TimeGreetingController::class, 'greet']);
         });
 
         Route::delete('delete', [StudentController::class, 'deleteAccount']);
         Route::get("logout", [StudentController::class, "logout"]);
-        Route::post('import', [StudentController::class,'importExcelData']);
+        Route::post('import', [StudentController::class, 'importExcelData']);
 
     });
 
     Route::prefix('teacher/')->group(function () {
         Route::get('list', [TeacherController::class, 'TeacherList']);
         Route::get("profile", [TeacherController::class, "profile"]);
-        Route::put('edit', [TeacherController::class, 'updateProfile']);
+
+        Route::prefix('edit/')->group(function () {
+            Route::put('email', [TeacherController::class, 'edit_email']);
+            Route::put('password', [TeacherController::class, 'edit_password']);
+            Route::put('username', [TeacherController::class, 'edit_username']);
+            Route::put('phone_number', [TeacherController::class, 'edit_phone_number']);
+        });
+
+        Route::prefix('dashboard/')->group(function () {
+            Route::get('greeting', [TimeGreetingController::class, 'greet']);
+        });
+
         Route::delete('delete', [TeacherController::class, 'deleteAccount']);
         Route::get("logout", [TeacherController::class, "logout"]);
-        Route::post('import', [TeacherController::class,'importExcelData']);
+        Route::post('import', [TeacherController::class, 'importExcelData']);
     });
 
     Route::prefix('principal/')->group(function () {
@@ -79,7 +90,7 @@ Route::group([
         Route::put('edit', [PrincipalController::class, 'updateProfile']);
         Route::delete('delete', [PrincipalController::class, 'deleteAccount']);
         Route::get("logout", [PrincipalController::class, "logout"]);
-        Route::post('import', [PrincipalController::class,'importExcelData']);
+        Route::post('import', [PrincipalController::class, 'importExcelData']);
     });
 });
 

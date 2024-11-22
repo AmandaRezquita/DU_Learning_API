@@ -15,10 +15,13 @@ class TeacherImport implements ToCollection
     {
         foreach ($rows as $row) {
             Teacher::created([
-                'name' => $row[0],
-                'phone_number' => $row[1],
-                'email' => $row[2],
-                'teacher_avatar_id' => $row[3],
+                'fullname' => $row[0],
+                'nickname' => $row[1],
+                'birth_date' => $row[2],
+                'phone_number' => $row[3],
+                'email' => $row[4],
+                'teacher_avatar_id' => $row[5],
+                'role_id' => $row[6],
             ]);
         }
     }
