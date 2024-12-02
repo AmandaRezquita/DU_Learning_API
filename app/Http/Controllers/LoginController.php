@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Principal\Auth\Principal;
 use App\Models\Student\Auth\Student;
+use App\Models\Student\Auth\StudentGender;
 use App\Models\Superadmin\Auth\School;
 use App\Models\Teacher\Auth\Teacher;
 use Auth;
@@ -67,15 +68,19 @@ class LoginController extends Controller
             } else if (Auth::guard('student')->attempt($request->only(['username', 'password']))) {
                 $student = Student::with('role')->where('username', $request->username)->first();
 
+                $gender = StudentGender::find($student->gender_id);
+
+                $image = StudentGender::find($student->student_image_id);
+                
                 $token = $student->createToken("API TOKEN")->plainTextToken;
 
                 $success['fullname'] = $student->fullname;
                 $success['nickname'] = $student->nickname;
                 $success['birth_date'] = $student->birth_date;
+                $success['gender'] = $gender ? $gender->name : null;
                 $success['phone_number'] = $student->phone_number;
                 $success['email'] = $student->email;
-                $success['image'] = $student->image;
-                $success['student_avatar_id'] = $student->student_avatar_id;
+                $success['image'] = $image ? $image->image : null;
                 $success['role_id'] = $student->role_id;
                 
                 return response()->json([

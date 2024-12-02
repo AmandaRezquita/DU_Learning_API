@@ -2,6 +2,7 @@
 
 
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\PrincipalCtrl\Auth\PrincipalAvatarController;
 use App\Http\Controllers\PrincipalCtrl\Auth\PrincipalController;
 use App\Http\Controllers\RoleController;
@@ -43,6 +44,8 @@ Route::group([
     "middleware" => ["auth:sanctum"]
 ], function () {
 
+    Route::get("logout", [LogoutController::class, "logout"]);
+
     Route::prefix('student/')->group(function () {
         Route::get('list', [StudentController::class, 'StudentList']);
         Route::get("profile", [StudentController::class, "profile"]);
@@ -59,7 +62,6 @@ Route::group([
         });
 
         Route::delete('delete', [StudentController::class, 'deleteAccount']);
-        Route::get("logout", [StudentController::class, "logout"]);
         Route::post('import', [StudentController::class, 'importExcelData']);
 
     });
@@ -80,7 +82,6 @@ Route::group([
         });
 
         Route::delete('delete', [TeacherController::class, 'deleteAccount']);
-        Route::get("logout", [TeacherController::class, "logout"]);
         Route::post('import', [TeacherController::class, 'importExcelData']);
     });
 
@@ -89,7 +90,6 @@ Route::group([
         Route::get("profile", [PrincipalController::class, "profile"]);
         Route::put('edit', [PrincipalController::class, 'updateProfile']);
         Route::delete('delete', [PrincipalController::class, 'deleteAccount']);
-        Route::get("logout", [PrincipalController::class, "logout"]);
         Route::post('import', [PrincipalController::class, 'importExcelData']);
     });
 });

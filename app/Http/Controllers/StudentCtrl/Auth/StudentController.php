@@ -5,6 +5,8 @@ namespace App\Http\Controllers\StudentCtrl\Auth;
 use App\Http\Controllers\Controller;
 use App\Imports\StudentImport;
 use App\Mail\sendStudentEmail;
+use App\Models\Student\Auth\StudentGender;
+use App\Models\Student\Auth\StudentImage;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use App\Models\Student\Auth\Student;
@@ -43,20 +45,12 @@ class StudentController extends Controller
                     'fullname' => 'required|string|max:255',
                     'nickname' => 'required|string|max:255',
                     'birth_date' => 'required|string|max:255',
+                    'gender_id' => 'required|integer',
                     'phone_number' => 'required|string|max:255',
                     'email' => 'required|email|unique:students,email',
-                    'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-                    'student_avatar_id' => 'nullable|integer',
                     'role_id' => 'required|integer'
                 ]
             );
-
-            if (($request->hasFile('image') && $request->student_avatar_id) || (!$request->hasFile('image') && !$request->student_avatar_id)) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'You must provide either an image or an avatar, but not both.',
-                ], 422);
-            }
 
             if ($validateStudent->fails()) {
                 return response()->json([
@@ -66,34 +60,36 @@ class StudentController extends Controller
                 ], 422);
             }
 
-            $imageName = null;
-            if ($request->hasFile('image')) {
-                $imageName = Str::random(32) . '.' . $request->image->getClientOriginalExtension();
-                Storage::disk('public')->put($imageName, file_get_contents($request->image));
-            }
+            $studentImageId = $request->gender_id == 1 ? 1 : ($request->gender_id == 2 ? 2 : null);
 
             $data = [
                 'fullname' => $request->fullname,
                 'nickname' => $request->nickname,
                 'birth_date' => $request->birth_date,
+                'gender_id' => $request->gender_id,
                 'phone_number' => $request->phone_number,
                 'email' => $request->email,
-                'image' => $imageName,
-                'student_avatar_id' => $request->student_avatar_id,
+                'student_image_id' => $studentImageId,
                 'role_id' => $request->role_id,
             ];
 
+
             $student = $this->handleRecordCreation($data);
+
+            $gender = StudentGender::find($student->gender_id);
+
+            $image = StudentImage::find($student->student_image_id);
+
 
             $token = $student->createToken("API TOKEN")->plainTextToken;
 
             $success['fullname'] = $student->fullname;
             $success['nickname'] = $student->nickname;
             $success['birth_date'] = $student->birth_date;
+            $success['gender'] = $gender ? $gender->name : null;
             $success['phone_number'] = $student->phone_number;
             $success['email'] = $student->email;
-            $success['image'] = $student->image;
-            $success['student_avatar_id'] = $student->student_avatar_id;
+            $success['image'] = $image ? $image->image : null;
             $success['role_id'] = $student->role_id;
 
             return response()->json([
@@ -110,17 +106,33 @@ class StudentController extends Controller
         }
     }
 
+
     public function profile()
     {
         $studentData = auth()->user();
+
+        $gender = StudentGender::find($studentData->gender_id);
+
+        $image = StudentImage::find($studentData->student_image_id);
+
+        $success['fullname'] = $studentData->fullname;
+        $success['nickname'] = $studentData->nickname;
+        $success['username'] = $studentData->nickname;
+        $success['birth_date'] = $studentData->birth_date;
+        $success['gender'] = $gender ? $gender->name : null;
+        $success['phone_number'] = $studentData->phone_number;
+        $success['email'] = $studentData->email;
+        $success['image'] = $image ? $image->image : null;
+        $success['role_id'] = $studentData->role_id;
+
         return response()->json([
             'status' => true,
             'message' => 'Profile Information',
-            'data' => $studentData,
+            'data' => $success,
         ], 200);
     }
 
-    
+
     public function edit_email(Request $request)
     {
         try {
@@ -175,33 +187,33 @@ class StudentController extends Controller
     {
         try {
             $student = auth()->user();
-    
+
             if (!$student) {
                 return response()->json(['status' => false, 'message' => 'User not authenticated'], 401);
             }
-    
+
             $validateStudent = Validator::make($request->all(), [
                 'current_password' => 'required|string|min:8',
                 'password' => 'required|string|min:8|confirmed',
             ]);
-    
+
             if ($validateStudent->fails()) {
                 return response()->json(['status' => false, 'message' => 'Validation error', 'errors' => $validateStudent->errors()], 422);
             }
-    
+
             if (!Hash::check($request->current_password, $student->password)) {
                 return response()->json(['status' => false, 'message' => 'Current password is incorrect'], 401);
             }
-    
+
             $student->password = Hash::make($request->password);
             $student->save();
-    
+
             return response()->json(['status' => true, 'message' => 'Password updated successfully'], 200);
         } catch (\Throwable $th) {
             return response()->json(['status' => false, 'errors' => $th->getMessage()], 500);
         }
     }
-    
+
 
     public function edit_username(Request $request)
     {
@@ -288,7 +300,7 @@ class StudentController extends Controller
             ], 500);
         }
     }
-    
+
     public function logout()
     {
         auth()->user()->tokens()->delete();
@@ -312,7 +324,7 @@ class StudentController extends Controller
 
         return $student;
     }
-    
+
 
     public function importExcelData(Request $request)
     {
@@ -329,10 +341,10 @@ class StudentController extends Controller
             $data = [
                 'fullname' => $row[0],
                 'nickname' => $row[1],
-                'birth_date' => $row[2]= \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row[2])->format('Y-m-d'),
-                'phone_number' => $row[3],
-                'email' => $row[4],
-                'student_avatar_id' => $row[5],
+                'birth_date' => $row[2] = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row[2])->format('Y-m-d'),
+                'gender_id' => $row[3],
+                'phone_number' => $row[4],
+                'email' => $row[5],
                 'role_id' => $row[6],
             ];
             $this->handleRecordCreation($data);
