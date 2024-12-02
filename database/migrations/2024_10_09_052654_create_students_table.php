@@ -17,12 +17,12 @@ return new class extends Migration {
             $table->string("fullname");
             $table->string("nickname");
             $table->string("birth_date");
+            $table->foreignId('gender_id')->constrained('student_genders');
             $table->string("phone_number");
             $table->string("email")->unique();
             $table->string("username");
             $table->string("password");
-            $table->string("image")->nullable();
-            $table->foreignId('student_avatar_id')->nullable()->constrained('student_avatars');
+            $table->foreignId('student_image_id')->nullable()->constrained('student_images');;
             $table->foreignId('role_id')->constrained('roles');
         });
     }

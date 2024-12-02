@@ -31,23 +31,28 @@ class Student extends Authenticatable
         'email',
         'username',
         'password',
-        'image',
-        'student_avatar_id',
+        'student_image_id',
+        'gender_id',
         'role_id',
     ];
 
     public $timestamps = false;
 
-    public function avatar()
-    {
-        return $this->belongsTo(StudentAvatar::class, 'avatar_id');
-    }
 
     public function role()
     {
         return $this->belongsTo(Role::class, 'role_id');
     }
 
+    public function gender()
+    {
+        return $this->belongsTo(StudentGender::class, 'gender_id'); 
+    }
+
+    public function studentImage()
+    {
+        return $this->hasOne(StudentImage::class); 
+    }
     
 
     /**
