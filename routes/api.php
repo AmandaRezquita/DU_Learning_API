@@ -10,6 +10,7 @@ use App\Http\Controllers\StudentCtrl\Auth\StudentAvatarController;
 use App\Http\Controllers\StudentCtrl\Auth\StudentController;
 use App\Http\Controllers\StudentCtrl\Profile\StudentProfile;
 use App\Http\Controllers\SuperadminCtrl\Auth\SchoolController;
+use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherAvatarController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherController;
 use App\Http\Controllers\TimeGreetingController;
@@ -21,7 +22,6 @@ Route::get('roles', [RoleController::class, 'GetRoles']);
 Route::prefix('student/')->group(function () {
     Route::post("regis", [StudentController::class, "register"]);
     Route::post("login", [StudentController::class, "login"]);
-    Route::get('avatar', [StudentAvatarController::class, 'getAvatars']);
 });
 
 Route::prefix('teacher/')->group(function () {
@@ -39,6 +39,13 @@ Route::prefix('principal/')->group(function () {
 Route::post("loginSuperadmin", [SchoolController::class, "login"]);
 Route::post("login", [LoginController::class, "login"]);
 
+Route::prefix('superadmin/')->group(function () {
+
+    Route::prefix('dashboard/')->group(function () {
+        Route::post('createClass', [ClassController::class, 'createClass']);
+    });
+
+});
 
 Route::group([
     "middleware" => ["auth:sanctum"]
