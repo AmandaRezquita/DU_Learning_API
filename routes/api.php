@@ -12,6 +12,7 @@ use App\Http\Controllers\StudentCtrl\Profile\StudentProfile;
 use App\Http\Controllers\SuperadminCtrl\Auth\SchoolController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassSubjectController;
+use App\Http\Controllers\SuperadminCtrl\Dashboard\SubjectTeacherController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherAvatarController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherController;
 use App\Http\Controllers\TimeGreetingController;
@@ -45,6 +46,7 @@ Route::prefix('superadmin/')->group(function () {
     Route::prefix('dashboard/')->group(function () {
         Route::post('createClass', [ClassController::class, 'createClass']);
         Route::post('createSubject', [ClassSubjectController::class, 'createSubject']);
+        Route::post('addTeacher', [SubjectTeacherController::class, 'addTeacher']);
     });
 
 });
