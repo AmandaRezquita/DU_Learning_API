@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Principal\Auth\Principal;
 use App\Models\Student\Auth\Student;
 use App\Models\Student\Auth\StudentGender;
+use App\Models\Student\Auth\StudentImage;
 use App\Models\Superadmin\Auth\School;
 use App\Models\Teacher\Auth\Teacher;
 use Auth;
@@ -70,7 +71,7 @@ class LoginController extends Controller
 
                 $gender = StudentGender::find($student->gender_id);
 
-                $image = StudentGender::find($student->student_image_id);
+                $image = StudentImage::find($student->student_image_id);
                 
                 $token = $student->createToken("API TOKEN")->plainTextToken;
 

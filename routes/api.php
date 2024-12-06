@@ -6,12 +6,11 @@ use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\PrincipalCtrl\Auth\PrincipalAvatarController;
 use App\Http\Controllers\PrincipalCtrl\Auth\PrincipalController;
 use App\Http\Controllers\RoleController;
-use App\Http\Controllers\StudentCtrl\Auth\StudentAvatarController;
 use App\Http\Controllers\StudentCtrl\Auth\StudentController;
-use App\Http\Controllers\StudentCtrl\Profile\StudentProfile;
 use App\Http\Controllers\SuperadminCtrl\Auth\SchoolController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassSubjectController;
+use App\Http\Controllers\SuperadminCtrl\Dashboard\ScheduleController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\SubjectTeacherController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherAvatarController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherController;
@@ -47,6 +46,9 @@ Route::prefix('superadmin/')->group(function () {
         Route::post('createClass', [ClassController::class, 'createClass']);
         Route::post('createSubject', [ClassSubjectController::class, 'createSubject']);
         Route::post('addTeacher', [SubjectTeacherController::class, 'addTeacher']);
+        Route::post('addSchedule', [ScheduleController::class, 'addSchedule']);
+        Route::get('schedule/{class_id}', [ScheduleController::class, 'getSchedule']);
+
     });
 
 });
