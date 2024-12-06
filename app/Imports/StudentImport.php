@@ -19,10 +19,11 @@ class StudentImport implements ToCollection
                 'fullname' => $row[0],
                 'nickname' => $row[1],
                 'birth_date' => $row[2],
-                'phone_number' => $row[3],
-                'email' => $row[4],
-                'student_avatar_id' => $row[5],
-                'role_id' => $row[6],
+                'student_number' => $row[3],
+                'gender_id' => $row[4],
+                'phone_number' => $row[5],
+                'email' => $row[6],
+                'role_id' => $row[7],
             ]);
         }
     }

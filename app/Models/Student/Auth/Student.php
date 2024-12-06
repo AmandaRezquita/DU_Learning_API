@@ -27,6 +27,7 @@ class Student extends Authenticatable
         'fullname',
         'nickname',
         'birth_date',
+        'student_number',
         'phone_number',
         'email',
         'username',

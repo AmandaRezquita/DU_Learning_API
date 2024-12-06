@@ -45,6 +45,7 @@ class StudentController extends Controller
                     'fullname' => 'required|string|max:255',
                     'nickname' => 'required|string|max:255',
                     'birth_date' => 'required|string|max:255',
+                    'student_number' => 'required|string|max:255',
                     'gender_id' => 'required|integer',
                     'phone_number' => 'required|string|max:255',
                     'email' => 'required|email|unique:students,email',
@@ -66,6 +67,7 @@ class StudentController extends Controller
                 'fullname' => $request->fullname,
                 'nickname' => $request->nickname,
                 'birth_date' => $request->birth_date,
+                'student_number' => $request->student_number,
                 'gender_id' => $request->gender_id,
                 'phone_number' => $request->phone_number,
                 'email' => $request->email,
@@ -86,6 +88,7 @@ class StudentController extends Controller
             $success['fullname'] = $student->fullname;
             $success['nickname'] = $student->nickname;
             $success['birth_date'] = $student->birth_date;
+            $success['student_number'] = $student->student_number;
             $success['gender'] = $gender ? $gender->name : null;
             $success['phone_number'] = $student->phone_number;
             $success['email'] = $student->email;
@@ -119,6 +122,7 @@ class StudentController extends Controller
         $success['nickname'] = $studentData->nickname;
         $success['username'] = $studentData->nickname;
         $success['birth_date'] = $studentData->birth_date;
+        $success['student_number'] = $studentData->student_number;
         $success['gender'] = $gender ? $gender->name : null;
         $success['phone_number'] = $studentData->phone_number;
         $success['email'] = $studentData->email;
@@ -342,10 +346,11 @@ class StudentController extends Controller
                 'fullname' => $row[0],
                 'nickname' => $row[1],
                 'birth_date' => $row[2] = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row[2])->format('Y-m-d'),
-                'gender_id' => $row[3],
-                'phone_number' => $row[4],
-                'email' => $row[5],
-                'role_id' => $row[6],
+                'student_number' => $row[3],
+                'gender_id' => $row[4],
+                'phone_number' => $row[5],
+                'email' => $row[6],
+                'role_id' => $row[7],
             ];
             $this->handleRecordCreation($data);
         }

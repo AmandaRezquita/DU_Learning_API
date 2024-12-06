@@ -78,6 +78,7 @@ class LoginController extends Controller
                 $success['fullname'] = $student->fullname;
                 $success['nickname'] = $student->nickname;
                 $success['birth_date'] = $student->birth_date;
+                $success['student_number'] = $student->student_number;
                 $success['gender'] = $gender ? $gender->name : null;
                 $success['phone_number'] = $student->phone_number;
                 $success['email'] = $student->email;

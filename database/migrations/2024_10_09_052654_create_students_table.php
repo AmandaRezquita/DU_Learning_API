@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->string("fullname");
             $table->string("nickname");
             $table->string("birth_date");
+            $table->string("student_number");
             $table->foreignId('gender_id')->constrained('student_genders');
             $table->string("phone_number");
             $table->string("email")->unique();
