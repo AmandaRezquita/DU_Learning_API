@@ -5,6 +5,8 @@ namespace App\Http\Controllers\TeacherCtrl\Auth;
 use App\Http\Controllers\Controller;
 use App\Imports\TeacherImport;
 use App\Mail\sendTeacherEmail;
+use App\Models\Teacher\Auth\TeacherGender;
+use App\Models\Teacher\Auth\TeacherImage;
 use Illuminate\Http\Request;
 use App\Models\Teacher\Auth\Teacher;
 use Illuminate\Support\Facades\Auth;
@@ -45,20 +47,13 @@ class TeacherController extends Controller
                     'fullname' => 'required|string|max:255',
                     'nickname' => 'required|string|max:255',
                     'birth_date' => 'required|string|max:255',
+                    'gender_id' => 'required|integer',
                     'phone_number' => 'required|string|max:255',
                     'email' => 'required|email|unique:teachers,email',
-                    'image' => 'nullable|string',
-                    'teacher_avatar_id' => 'nullable|integer',
                     'role_id' => 'required|integer',
                 ]
             );
 
-            if (($request->hasFile('image') && $request->teacher_avatar_id) || (!$request->hasFile('image') && !$request->teacher_avatar_id)) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'You must provide either an image or an avatar, but not both.',
-                ], 422);
-            }
 
             if ($validateTeacher->fails()) {
                 return response()->json([
@@ -68,34 +63,34 @@ class TeacherController extends Controller
                 ], 422);
             }
 
-            $imageName = null;
-            if ($request->hasFile('image')) {
-                $imageName = Str::random(32) . '.' . $request->image->getClientOriginalExtension();
-                Storage::disk('public')->put($imageName, file_get_contents($request->image));
-            }
+            $teacherImageId = $request->gender_id == 1 ? 1 : ($request->gender_id == 2 ? 2 : null);
 
             $data = [
                 'fullname' => $request->fullname,
                 'nickname' => $request->nickname,
                 'birth_date' => $request->birth_date,
+                'gender_id' => $request->gender_id,
                 'phone_number' => $request->phone_number,
                 'email' => $request->email,
-                'image' => $request->image,
-                'teacher_avatar_id' => $request->teacher_avatar_id,
+                'teacher_image_id' => $teacherImageId,
                 'role_id' => $request->role_id,
             ];
 
             $teacher = $this->handleRecordCreation($data);
+
+            $gender = TeacherGender::find($teacher->gender_id);
+
+            $image = TeacherImage::find($teacher->teacher_image_id);
 
             $token = $teacher->createToken("API TOKEN")->plainTextToken;
 
             $success['fullname'] = $teacher->fullname;
             $success['nickname'] = $teacher->nickname;
             $success['birth_date'] = $teacher->birth_date;
+            $success['gender'] = $gender ? $gender->name : null;
             $success['phone_number'] = $teacher->phone_number;
             $success['email'] = $teacher->email;
-            $success['image'] = $teacher->image;
-            $success['teacher_avatar_id'] = $teacher->teacher_avatar_id;
+            $success['image'] = $image ? $image->image : null;
             $success['role_id'] = $teacher->role_id;
 
 
@@ -116,10 +111,25 @@ class TeacherController extends Controller
     public function profile()
     {
         $teacherData = auth()->user();
+
+        $gender = TeacherGender::find($teacherData->gender_id);
+
+        $image = TeacherImage::find($teacherData->teacher_image_id);
+
+        $success['fullname'] = $teacherData->fullname;
+        $success['nickname'] = $teacherData->nickname;
+        $success['username'] = $teacherData->nickname;
+        $success['birth_date'] = $teacherData->birth_date;
+        $success['gender'] = $gender ? $gender->name : null;
+        $success['phone_number'] = $teacherData->phone_number;
+        $success['email'] = $teacherData->email;
+        $success['image'] = $image ? $image->image : null;
+        $success['role_id'] = $teacherData->role_id;
+
         return response()->json([
             'status' => true,
             'message' => 'Profile Information',
-            'data' => $teacherData,
+            'data' => $success,
         ], 200);
     }
 
@@ -177,33 +187,33 @@ class TeacherController extends Controller
     {
         try {
             $teacher = auth()->user();
-    
+
             if (!$teacher) {
                 return response()->json(['status' => false, 'message' => 'User not authenticated'], 401);
             }
-    
+
             $validateTeacher = Validator::make($request->all(), [
                 'current_password' => 'required|string|min:8',
                 'password' => 'required|string|min:8|confirmed',
             ]);
-    
+
             if ($validateTeacher->fails()) {
                 return response()->json(['status' => false, 'message' => 'Validation error', 'errors' => $validateTeacher->errors()], 422);
             }
-    
+
             if (!Hash::check($request->current_password, $teacher->password)) {
                 return response()->json(['status' => false, 'message' => 'Current password is incorrect'], 401);
             }
-    
+
             $teacher->password = Hash::make($request->password);
             $teacher->save();
-    
+
             return response()->json(['status' => true, 'message' => 'Password updated successfully'], 200);
         } catch (\Throwable $th) {
             return response()->json(['status' => false, 'errors' => $th->getMessage()], 500);
         }
     }
-    
+
 
     public function edit_username(Request $request)
     {
@@ -290,7 +300,6 @@ class TeacherController extends Controller
             ], 500);
         }
     }
-   
 
     public function logout()
     {
@@ -332,10 +341,10 @@ class TeacherController extends Controller
             $data = [
                 'fullname' => $row[0],
                 'nickname' => $row[1],
-                'birth_date' => $row[2]= \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row[2])->format('Y-m-d'),
-                'phone_number' => $row[3],
-                'email' => $row[4],
-                'teacher_avatar_id' => $row[5],
+                'birth_date' => $row[2] = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row[2])->format('Y-m-d'),
+                'gender_id' => $row[3],
+                'phone_number' => $row[4],
+                'email' => $row[5],
                 'role_id' => $row[6],
             ];
             $this->handleRecordCreation($data);

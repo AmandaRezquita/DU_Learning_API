@@ -30,8 +30,8 @@ class Teacher extends Authenticatable
         'email',
         'username',
         'password',
-        'image',
-        'teacher_avatar_id',
+        'teacher_image_id',
+        'gender_id',
         'role_id',
     ];
 
