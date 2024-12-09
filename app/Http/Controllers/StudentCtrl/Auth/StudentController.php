@@ -316,8 +316,13 @@ class StudentController extends Controller
 
     protected function handleRecordCreation(array $data): Student
     {
-        $username = str()->random(8);
-        $password = str()->random(8);
+        $firstName = explode(' ', $data['fullname'])[0];
+
+        $lastTwoDigits = substr($data['student_number'], -2);
+
+        $username = $firstName . $lastTwoDigits;
+
+        $password = Str::random(8);
 
         $data['username'] = $username;
         $data['password'] = Hash::make($password);
@@ -328,6 +333,7 @@ class StudentController extends Controller
 
         return $student;
     }
+
 
 
     public function importExcelData(Request $request)
