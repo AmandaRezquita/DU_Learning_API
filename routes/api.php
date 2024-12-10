@@ -7,6 +7,7 @@ use App\Http\Controllers\PrincipalCtrl\Auth\PrincipalAvatarController;
 use App\Http\Controllers\PrincipalCtrl\Auth\PrincipalController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StudentCtrl\Auth\StudentController;
+use App\Http\Controllers\StudentCtrl\Dashboard\SearchStudentController;
 use App\Http\Controllers\SuperadminCtrl\Auth\SchoolController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassSubjectController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\SuperadminCtrl\Dashboard\SubjectTeacherController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\TotalController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherAvatarController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherController;
+use App\Http\Controllers\TeacherCtrl\Dashboard\SearchTeacherController;
 use App\Http\Controllers\TimeGreetingController;
 use Illuminate\Support\Facades\Route;
 
@@ -44,14 +46,18 @@ Route::post("login", [LoginController::class, "login"]);
 Route::prefix('superadmin/')->group(function () {
 
     Route::prefix('dashboard/')->group(function () {
-        Route::post('createClass', [ClassController::class, 'createClass']);
-        Route::post('createSubject', [ClassSubjectController::class, 'createSubject']);
-        Route::post('addTeacher', [SubjectTeacherController::class, 'addTeacher']);
-        Route::post('addSchedule', [ScheduleController::class, 'addSchedule']);
-        Route::get('schedule/{class_id}', [ScheduleController::class, 'getSchedule']);
+
+        Route::post('create-class', [ClassController::class, 'createClass']);
+        Route::post('create-subject', [ClassSubjectController::class, 'createSubject']);
+        Route::post('add-teacher', [SubjectTeacherController::class, 'addTeacher']);
+        Route::post('add-schedule', [ScheduleController::class, 'addSchedule']);
+        Route::get('student', [SearchStudentController::class, 'SearchStudent']);
+        Route::get('teacher', [SearchTeacherController::class, 'SearchTeacher']);
+        Route::get('class', [ClassController::class, 'SearchClass']);
         Route::get('teacher-total', [TotalController::class, 'getTeacherTotal']);
         Route::get('student-total', [TotalController::class, 'getStudentTotal']);
         Route::get('principal-total', [TotalController::class, 'getPrincipalTotal']);
+        Route::get('class-total', [TotalController::class, 'getClassTotal']);
     });
 
 });
