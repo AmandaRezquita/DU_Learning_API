@@ -27,6 +27,30 @@ class ClassController extends Controller
             ], 500);
         }
     }
+
+    public function SearchClass(Request $request)
+    {
+        try {
+            $search = $request->query('search');
+
+            $classList = SchoolClass::where(function ($query) use ($search) {
+                $query->where('class_name', 'LIKE', '%' . $search . '%');
+            })->get();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Successfully',
+                'data' => $classList
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+
     public function createClass(Request $request)
     {
         try {
