@@ -57,6 +57,7 @@ Route::prefix('superadmin/')->group(function () {
         Route::get('teacher-total', [TotalController::class, 'getTeacherTotal']);
         Route::get('student-total', [TotalController::class, 'getStudentTotal']);
         Route::get('principal-total', [TotalController::class, 'getPrincipalTotal']);
+        Route::get('class-total', [TotalController::class, 'getClassTotal']);
     });
 
 });
