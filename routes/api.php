@@ -13,6 +13,7 @@ use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassSubjectController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ScheduleController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\SubjectTeacherController;
+use App\Http\Controllers\SuperadminCtrl\Dashboard\TotalController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherAvatarController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherController;
 use App\Http\Controllers\TeacherCtrl\Dashboard\SearchTeacherController;
@@ -45,6 +46,7 @@ Route::post("login", [LoginController::class, "login"]);
 Route::prefix('superadmin/')->group(function () {
 
     Route::prefix('dashboard/')->group(function () {
+
         Route::post('create-class', [ClassController::class, 'createClass']);
         Route::post('create-subject', [ClassSubjectController::class, 'createSubject']);
         Route::post('add-teacher', [SubjectTeacherController::class, 'addTeacher']);
@@ -52,9 +54,9 @@ Route::prefix('superadmin/')->group(function () {
         Route::get('student', [SearchStudentController::class, 'SearchStudent']);
         Route::get('teacher', [SearchTeacherController::class, 'SearchTeacher']);
         Route::get('class', [ClassController::class, 'SearchClass']);
-
-        Route::get('teacher-total', [ClassController::class, 'SearchClass']);
-
+        Route::get('teacher-total', [TotalController::class, 'getTeacherTotal']);
+        Route::get('student-total', [TotalController::class, 'getStudentTotal']);
+        Route::get('principal-total', [TotalController::class, 'getPrincipalTotal']);
     });
 
 });
