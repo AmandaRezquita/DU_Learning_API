@@ -40,7 +40,7 @@ Route::prefix('principal/')->group(function () {
     Route::get('avatar', [PrincipalAvatarController::class, 'getAvatars']);
 });
 
-Route::post("loginSuperadmin", [SchoolController::class, "login"]);
+Route::post("login/superadmin", [SchoolController::class, "login"]);
 Route::post("login", [LoginController::class, "login"]);
 
 Route::prefix('superadmin/')->group(function () {
@@ -54,17 +54,32 @@ Route::prefix('superadmin/')->group(function () {
         Route::get('student', [SearchStudentController::class, 'SearchStudent']);
         Route::get('teacher', [SearchTeacherController::class, 'SearchTeacher']);
         Route::get('class', [ClassController::class, 'SearchClass']);
-        Route::get('teacher-total', [TotalController::class, 'getTeacherTotal']);
-        Route::get('student-total', [TotalController::class, 'getStudentTotal']);
-        Route::get('principal-total', [TotalController::class, 'getPrincipalTotal']);
-        Route::get('class-total', [TotalController::class, 'getClassTotal']);
+        Route::get('total', [TotalController::class, 'getTotal']);
     });
 
+    Route::get('school-profile', [SchoolController::class, 'profile']);
 });
 
 Route::group([
     "middleware" => ["auth:sanctum"]
 ], function () {
+
+    Route::prefix('superadmin/')->group(function () {
+
+        Route::prefix('dashboard/')->group(function () {
+    
+            Route::post('create-class', [ClassController::class, 'createClass']);
+            Route::post('create-subject', [ClassSubjectController::class, 'createSubject']);
+            Route::post('add-teacher', [SubjectTeacherController::class, 'addTeacher']);
+            Route::post('add-schedule', [ScheduleController::class, 'addSchedule']);
+            Route::get('student', [SearchStudentController::class, 'SearchStudent']);
+            Route::get('teacher', [SearchTeacherController::class, 'SearchTeacher']);
+            Route::get('class', [ClassController::class, 'SearchClass']);
+            Route::get('total', [TotalController::class, 'getTotal']);
+        });
+    
+        Route::get('school-profile', [SchoolController::class, 'profile']);
+    });
 
     Route::get("logout", [LogoutController::class, "logout"]);
 

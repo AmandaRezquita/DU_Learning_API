@@ -20,6 +20,7 @@ return new class extends Migration {
             $table->string('address');
             $table->string('jenjang');
             $table->string('principal_name');
+            $table->foreignId('role_id')->constrained('roles');
             $table->string('logo')->nullable();
         });
     }

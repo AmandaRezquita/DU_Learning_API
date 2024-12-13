@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\SuperadminCtrl\Auth;
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use App\Models\Superadmin\Auth\School;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -40,7 +41,13 @@ class SchoolController extends Controller
             $token = $school->createToken("API TOKEN")->plainTextToken;
 
             $success['name'] = $school->name;
+            $success['phone'] = $school->phone;
+            $success['address'] = $school->address;
+            $success['jenjang'] = $school->jenjang;
+            $success['principal_name'] = $school->principal_name;
+            $success['role_id'] = $school->role_id;
             $success['logo'] = $school->logo;
+
 
 
             return response()->json([
@@ -56,5 +63,29 @@ class SchoolController extends Controller
                 'errors' => $th->getMessage()
             ], 500);
         }
+    }
+
+    public function profile(Request $request)
+    {
+        $school = School::where('username', $request->username)->first();
+
+        $school = auth()->user();
+
+        $role = Role::find($school->role_id);
+
+        $success['name'] = $school->name;
+        $success['phone'] = $school->phone;
+        $success['address'] = $school->address;
+        $success['jenjang'] = $school->jenjang;
+        $success['principal_name'] = $school->principal_name;
+        $success['role'] = $role ? $role->role_name : null;
+        $success['logo'] = $school->logo;
+     
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Profile Information',
+            'data' => $success,
+        ], 200);
     }
 }

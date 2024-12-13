@@ -22,8 +22,27 @@ class StudentController extends Controller
     public function StudentList()
     {
         try {
-            $studentList = Student::all();
+            $studentList = Student::all()->map(function ($student) {
 
+                $gender = StudentGender::find($student->gender_id);
+
+                $image = StudentImage::find($student->student_image_id);
+
+                return [
+                    'id' => $student->id,
+                    'fullname' => $student->fullname,
+                    'nickname' => $student->nickname,
+                    'birth_date' => $student->birth_date,
+                    'student_number' => $student->student_number,
+                    'gender' => $gender ? $gender->name : null,
+                    'phone_number' => $student->phone_number,
+                    'username' => $student->username,
+                    'email' => $student->email,
+                    'image' => $image ? $image->image : null,
+                    'role_id' => $student->role_id,
+                ];
+            });
+    
             return response()->json([
                 'status' => true,
                 'message' => 'List retrieved successfully',

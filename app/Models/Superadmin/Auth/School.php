@@ -21,6 +21,7 @@ class School extends Authenticatable
         "jenjang",
         "principal_name",
         "logo",
+        "role_id"
     ];
 
     public $timestamps = false;

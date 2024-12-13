@@ -19,25 +19,39 @@ use Str;
 
 class TeacherController extends Controller
 {
-
-
     public function TeacherList()
-    {
-        try {
-            $teacherList = Teacher::all();
+{
+    try {
+        $teacherList = Teacher::all()->map(function ($teacher) {
 
-            return response()->json([
-                'status' => true,
-                'message' => 'Avatars retrieved successfully',
-                'data' => $teacherList
-            ], 200);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage(),
-            ], 500);
-        }
+            $gender = TeacherGender::find($teacher->gender_id);
+
+            $image = TeacherImage::find($teacher->teacher_image_id);
+
+            return [
+                'id' => $teacher->id,
+                'fullname' => $teacher->fullname,
+                'nickname' => $teacher->nickname,
+                'birth_date' => $teacher->birth_date,
+                'gender' =>  $gender ? $gender->name : null,
+                'phone_number' => $teacher->phone_number,
+                'email' => $teacher->email,
+                'image' => $image ? $image->image : null,
+                'role_id' => $teacher->role_id,
+            ];
+        });
+        return response()->json([
+            'status' => true,
+            'message' => 'Teachers retrieved successfully',
+            'data' => $teacherList
+        ], 200);
+    } catch (\Throwable $th) {
+        return response()->json([
+            'status' => false,
+            'message' => $th->getMessage(),
+        ], 500);
     }
+}
     public function register(Request $request)
     {
         try {

@@ -11,17 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('roles', function (Blueprint $table) {
+        Schema::create('classadd_students', function (Blueprint $table) {
             $table->id();
-            $table->string('role_name');
+            $table->foreignId('class_id')->constrained('school_classes');
+            $table->foreignId('student_id')->constrained('students');
         });
-
-        DB::table('roles')->insert([
-            ['role_name' => 'Student'], 
-            ['role_name' => 'Teacher'], 
-            ['role_name' => 'Principal'], 
-            ['role_name' => 'Superadmin'], 
-        ]);
     }
 
     /**
@@ -29,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('roles');
+        Schema::dropIfExists('classadd_students');
     }
 };

@@ -11,65 +11,22 @@ use Illuminate\Http\Request;
 
 class TotalController extends Controller
 {
-    public function getTeacherTotal(){
+    public function getTotal(){
         try {
             $totalTeacher = Teacher::count();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Successfully',
-                'data' => $totalTeacher
-            ], 200);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage(),
-            ], 500);
-        }
-    }
-
-    public function getStudentTotal(){
-        try {
             $totalStudent = Student::count();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Successfully',
-                'data' => $totalStudent
-            ], 200);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage(),
-            ], 500);
-        }
-    }
-
-    public function getPrincipalTotal(){
-        try {
             $principal = Principal::count();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Successfully',
-                'data' => $principal
-            ], 200);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage(),
-            ], 500);
-        }
-    }
-
-    public function getClassTotal(){
-        try {
             $class = SchoolClass::count();
 
+            $data['Guru'] = $totalTeacher;
+            $data['Murid'] = $totalStudent;
+            $data['Kelas'] = $class;
+            $data['Kepala Sekolah'] = $principal;
+
             return response()->json([
                 'status' => true,
                 'message' => 'Successfully',
-                'data' => $class
+                'data' => $data
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
