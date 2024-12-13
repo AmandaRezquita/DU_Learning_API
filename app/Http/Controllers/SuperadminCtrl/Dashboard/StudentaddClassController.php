@@ -3,23 +3,21 @@
 namespace App\Http\Controllers\SuperadminCtrl\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Models\Superadmin\Dashboard\subjectaddTeacher;
-use App\Models\Teacher\Auth\Teacher; // Pastikan namespace model Teacher benar
+use App\Models\Student\Auth\Student;
+use App\Models\Superadmin\Dashboard\StudentClass;
 use Illuminate\Http\Request;
 use Validator;
 
-class SubjectTeacherController extends Controller
+class StudentaddClassController extends Controller
 {
-    public function addTeacher(Request $request)
+    public function addStudent(Request $request)
     {
         try {
             $validate = Validator::make(
                 $request->all(),
                 [
                     'class_id' => 'required|integer',
-                    'subject_id' => 'required|integer',
-                    'teacher_id' => 'required|integer|exists:teachers,id',
-                    'teacher_fullname' => 'required|string|max:255',
+                    'student_id' => 'required|integer|exists:students,id',
                 ]
             );
 
@@ -31,27 +29,16 @@ class SubjectTeacherController extends Controller
                 ], 422);
             }
 
-            $teacher = Teacher::find($request->teacher_id);
-
-            if (!$teacher || $teacher->fullname !== $request->teacher_fullname) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Teacher fullname does not match with the teacher ID',
-                ], 422);
-            }
-
             $data = [
                 'class_id' => $request->class_id,
-                'subject_id' => $request->subject_id,
-                'teacher_id' => $teacher->id,
-                'teacher_fullname' => $request->teacher_fullname, 
+                'student_id' => $request->student_id,
             ];
 
-            $subject = subjectaddTeacher::create($data);
+            $subject = StudentClass::create($data);
 
             return response()->json([
                 'status' => true,
-                'message' => 'Teacher added successfully',
+                'message' => 'Student added successfully',
                 'data' => $subject,
             ], 200);
         } catch (\Throwable $th) {
@@ -62,4 +49,5 @@ class SubjectTeacherController extends Controller
             ], 500);
         }
     }
+
 }
