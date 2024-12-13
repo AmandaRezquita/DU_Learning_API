@@ -21,7 +21,6 @@ class TeacherImport implements ToCollection
                 'gender_id' => $row[3],
                 'phone_number' => $row[4],
                 'email' => $row[5],
-                'role_id' => $row[6],
             ]);
         }
     }

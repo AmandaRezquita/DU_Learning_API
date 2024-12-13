@@ -23,7 +23,6 @@ class StudentImport implements ToCollection
                 'gender_id' => $row[4],
                 'phone_number' => $row[5],
                 'email' => $row[6],
-                'role_id' => $row[7],
             ]);
         }
     }

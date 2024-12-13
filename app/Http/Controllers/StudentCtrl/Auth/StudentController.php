@@ -68,7 +68,6 @@ class StudentController extends Controller
                     'gender_id' => 'required|integer',
                     'phone_number' => 'required|string|max:255',
                     'email' => 'required|email|unique:students,email',
-                    'role_id' => 'required|integer'
                 ]
             );
 
@@ -91,7 +90,7 @@ class StudentController extends Controller
                 'phone_number' => $request->phone_number,
                 'email' => $request->email,
                 'student_image_id' => $studentImageId,
-                'role_id' => $request->role_id,
+                'role_id' => 1,
             ];
 
 
@@ -345,6 +344,7 @@ class StudentController extends Controller
 
         $data['username'] = $username;
         $data['password'] = Hash::make($password);
+        $data['role_id'] = 1;
 
         $student = Student::create($data);
 
@@ -375,7 +375,6 @@ class StudentController extends Controller
                 'gender_id' => $row[4],
                 'phone_number' => $row[5],
                 'email' => $row[6],
-                'role_id' => $row[7],
             ];
             $this->handleRecordCreation($data);
         }

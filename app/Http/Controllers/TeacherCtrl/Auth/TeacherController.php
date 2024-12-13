@@ -37,7 +37,6 @@ class TeacherController extends Controller
                 'phone_number' => $teacher->phone_number,
                 'email' => $teacher->email,
                 'image' => $image ? $image->image : null,
-                'role_id' => $teacher->role_id,
             ];
         });
         return response()->json([
@@ -87,7 +86,7 @@ class TeacherController extends Controller
                 'phone_number' => $request->phone_number,
                 'email' => $request->email,
                 'teacher_image_id' => $teacherImageId,
-                'role_id' => $request->role_id,
+                'role_id' => 1,
             ];
 
             $teacher = $this->handleRecordCreation($data);
@@ -332,6 +331,7 @@ class TeacherController extends Controller
 
         $data['username'] = $username;
         $data['password'] = Hash::make($password);
+        $data['role_id'] = 1;
 
         $teacher = Teacher::create($data);
 
@@ -359,7 +359,6 @@ class TeacherController extends Controller
                 'gender_id' => $row[3],
                 'phone_number' => $row[4],
                 'email' => $row[5],
-                'role_id' => $row[6],
             ];
             $this->handleRecordCreation($data);
         }
