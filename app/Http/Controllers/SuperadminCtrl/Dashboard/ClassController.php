@@ -3,7 +3,12 @@
 namespace App\Http\Controllers\SuperadminCtrl\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Student\Auth\Student;
+use App\Models\Superadmin\Dashboard\ClassSubject;
 use App\Models\Superadmin\Dashboard\SchoolClass;
+use App\Models\Superadmin\Dashboard\StudentClass;
+use App\Models\Superadmin\Dashboard\subjectaddTeacher;
+use App\Models\Teacher\Auth\Teacher;
 use Illuminate\Http\Request;
 use Validator;
 
@@ -13,7 +18,19 @@ class ClassController extends Controller
     public function classList()
     {
         try {
-            $classList = SchoolClass::all();
+            $classList = SchoolClass::all()->map(function ($class) {
+                $totalTeachers = subjectaddTeacher::where('class_id', $class->id)->count();
+                $totalStudents = StudentClass::where('class_id', $class->id)->count();
+                $totalSubjects = ClassSubject::where('class_id', $class->id)->count();
+
+                return [
+                    'id' => $class->id,
+                    'class_name' => $class->class_name,
+                    'total_teachers' => $totalTeachers,
+                    'total_students' => $totalStudents,
+                    'total_subjects' => $totalSubjects,
+                ];
+            });
 
             return response()->json([
                 'status' => true,

@@ -12,6 +12,7 @@ use App\Http\Controllers\SuperadminCtrl\Auth\SchoolController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassSubjectController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ScheduleController;
+use App\Http\Controllers\SuperadminCtrl\Dashboard\StudentaddClassController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\SubjectTeacherController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\TotalController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherAvatarController;
@@ -43,22 +44,6 @@ Route::prefix('principal/')->group(function () {
 Route::post("login/superadmin", [SchoolController::class, "login"]);
 Route::post("login", [LoginController::class, "login"]);
 
-Route::prefix('superadmin/')->group(function () {
-
-    Route::prefix('dashboard/')->group(function () {
-
-        Route::post('create-class', [ClassController::class, 'createClass']);
-        Route::post('create-subject', [ClassSubjectController::class, 'createSubject']);
-        Route::post('add-teacher', [SubjectTeacherController::class, 'addTeacher']);
-        Route::post('add-schedule', [ScheduleController::class, 'addSchedule']);
-        Route::get('student', [SearchStudentController::class, 'SearchStudent']);
-        Route::get('teacher', [SearchTeacherController::class, 'SearchTeacher']);
-        Route::get('class', [ClassController::class, 'SearchClass']);
-        Route::get('total', [TotalController::class, 'getTotal']);
-    });
-
-    Route::get('school-profile', [SchoolController::class, 'profile']);
-});
 
 Route::group([
     "middleware" => ["auth:sanctum"]
@@ -76,6 +61,10 @@ Route::group([
             Route::get('teacher', [SearchTeacherController::class, 'SearchTeacher']);
             Route::get('class', [ClassController::class, 'SearchClass']);
             Route::get('total', [TotalController::class, 'getTotal']);
+            Route::post('add-student', [StudentaddClassController::class, 'addStudent']);
+            Route::get('class-list', [ClassController::class, 'ClassList']);
+
+            
         });
     
         Route::get('school-profile', [SchoolController::class, 'profile']);

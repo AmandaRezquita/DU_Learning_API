@@ -11,6 +11,7 @@ class subjectaddTeacher extends Model
     use HasFactory;
 
     protected $fillable = [
+        'class_id',
         'subject_id',
         'teacher_id',
         'teacher_fullname'
