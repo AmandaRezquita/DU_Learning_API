@@ -18,9 +18,10 @@ class TeacherImport implements ToCollection
                 'fullname' => $row[0],
                 'nickname' => $row[1],
                 'birth_date' => $row[2],
-                'gender_id' => $row[3],
-                'phone_number' => $row[4],
-                'email' => $row[5],
+                'teacher_number' => $row[3],
+                'gender_id' => $row[4],
+                'phone_number' => $row[5],
+                'email' => $row[6],
             ]);
         }
     }

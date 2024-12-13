@@ -33,10 +33,12 @@ class TeacherController extends Controller
                 'fullname' => $teacher->fullname,
                 'nickname' => $teacher->nickname,
                 'birth_date' => $teacher->birth_date,
+                'teacher_number' => $teacher->teacher_number,
                 'gender' =>  $gender ? $gender->name : null,
                 'phone_number' => $teacher->phone_number,
                 'email' => $teacher->email,
                 'image' => $image ? $image->image : null,
+                'role_id' => $teacher->role_id,
             ];
         });
         return response()->json([
@@ -60,10 +62,10 @@ class TeacherController extends Controller
                     'fullname' => 'required|string|max:255',
                     'nickname' => 'required|string|max:255',
                     'birth_date' => 'required|string|max:255',
+                    'teacher_number' => 'required|string|max:255',
                     'gender_id' => 'required|integer',
                     'phone_number' => 'required|string|max:255',
                     'email' => 'required|email|unique:teachers,email',
-                    'role_id' => 'required|integer',
                 ]
             );
 
@@ -82,11 +84,12 @@ class TeacherController extends Controller
                 'fullname' => $request->fullname,
                 'nickname' => $request->nickname,
                 'birth_date' => $request->birth_date,
+                'teacher_number' => $request->teacher_number,
                 'gender_id' => $request->gender_id,
                 'phone_number' => $request->phone_number,
                 'email' => $request->email,
                 'teacher_image_id' => $teacherImageId,
-                'role_id' => 1,
+                'role_id' => 2,
             ];
 
             $teacher = $this->handleRecordCreation($data);
@@ -100,6 +103,7 @@ class TeacherController extends Controller
             $success['fullname'] = $teacher->fullname;
             $success['nickname'] = $teacher->nickname;
             $success['birth_date'] = $teacher->birth_date;
+            $success['teacher_number'] = $teacher->teacher_number;
             $success['gender'] = $gender ? $gender->name : null;
             $success['phone_number'] = $teacher->phone_number;
             $success['email'] = $teacher->email;
@@ -133,6 +137,7 @@ class TeacherController extends Controller
         $success['nickname'] = $teacherData->nickname;
         $success['username'] = $teacherData->nickname;
         $success['birth_date'] = $teacherData->birth_date;
+        $success['teacher_number'] = $teacherData->teacher_number;
         $success['gender'] = $gender ? $gender->name : null;
         $success['phone_number'] = $teacherData->phone_number;
         $success['email'] = $teacherData->email;
@@ -331,7 +336,7 @@ class TeacherController extends Controller
 
         $data['username'] = $username;
         $data['password'] = Hash::make($password);
-        $data['role_id'] = 1;
+        $data['role_id'] = 2;
 
         $teacher = Teacher::create($data);
 
@@ -356,9 +361,10 @@ class TeacherController extends Controller
                 'fullname' => $row[0],
                 'nickname' => $row[1],
                 'birth_date' => $row[2] = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row[2])->format('Y-m-d'),
-                'gender_id' => $row[3],
-                'phone_number' => $row[4],
-                'email' => $row[5],
+                'teacher_number' => $row[3],
+                'gender_id' => $row[4],
+                'phone_number' => $row[5],
+                'email' => $row[6],
             ];
             $this->handleRecordCreation($data);
         }
