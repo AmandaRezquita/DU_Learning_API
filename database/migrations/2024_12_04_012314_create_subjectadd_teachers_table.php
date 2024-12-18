@@ -16,7 +16,6 @@ return new class extends Migration
             $table->foreignId('class_id')->constrained('school_classes');
             $table->foreignId('subject_id')->constrained('class_subjects');
             $table->foreignId('teacher_id')->constrained('teachers');
-            $table->string('teacher_fullname')->constrained('teachers');
         });
     }
 

@@ -14,7 +14,6 @@ class subjectaddTeacher extends Model
         'class_id',
         'subject_id',
         'teacher_id',
-        'teacher_fullname'
     ];
 
     public function teacher()
