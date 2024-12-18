@@ -14,13 +14,16 @@ return new class extends Migration
     {
         Schema::create('principals', function (Blueprint $table) {
             $table->id();
-            $table->string("name");
+            $table->string("fullname");
+            $table->string("nickname");
+            $table->string("birth_date");
+            $table->string("principal_number");
+            $table->foreignId('gender_id')->constrained('principal__genders');
             $table->string("phone_number");
             $table->string("email")->unique();
             $table->string("username");
             $table->string("password");
-            $table->string("image")->nullable();
-            $table->foreignId('principal_avatar_id')->nullable()->constrained('principal_avatars');
+            $table->foreignId('principal_image_id')->nullable()->constrained('principal__images');;
             $table->foreignId('role_id')->constrained('roles');
         });
     }

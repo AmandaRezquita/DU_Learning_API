@@ -11,15 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('teacher_avatars', function (Blueprint $table) {
+        Schema::create('principal__genders', function (Blueprint $table) {
             $table->id();
-            $table->string('avatar');
+            $table->string('name');
         });
 
-        DB::table('teacher_avatars')->insert([
-            ['avatar' => 'storage/student1.png'], 
-            ['avatar' => 'storage/student2.png'], 
+        DB::table('principal__genders')->insert([
+            ['name' => 'male'], 
+            ['name' => 'female'], 
         ]);
+        
     }
 
     /**
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('teacher_avatars');
+        Schema::dropIfExists('principal__genders');
     }
 };

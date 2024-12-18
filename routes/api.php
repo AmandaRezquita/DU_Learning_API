@@ -15,7 +15,6 @@ use App\Http\Controllers\SuperadminCtrl\Dashboard\ScheduleController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\StudentaddClassController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\SubjectTeacherController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\TotalController;
-use App\Http\Controllers\TeacherCtrl\Auth\TeacherAvatarController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherController;
 use App\Http\Controllers\TeacherCtrl\Dashboard\SearchTeacherController;
 use App\Http\Controllers\TimeGreetingController;
@@ -32,13 +31,11 @@ Route::prefix('student/')->group(function () {
 Route::prefix('teacher/')->group(function () {
     Route::post("regis", [TeacherController::class, "register"]);
     Route::post("login", [TeacherController::class, "login"]);
-    Route::get('avatar', [TeacherAvatarController::class, 'getAvatars']);
 });
 
 Route::prefix('principal/')->group(function () {
     Route::post("regis", [PrincipalController::class, "register"]);
     Route::post("login", [PrincipalController::class, "login"]);
-    Route::get('avatar', [PrincipalAvatarController::class, 'getAvatars']);
 });
 
 Route::post("login/superadmin", [SchoolController::class, "login"]);
@@ -112,21 +109,21 @@ Route::group([
     });
 
     Route::prefix('principal/')->group(function () {
-        Route::get('list', [PrincipalController::class, 'TeacherList']);
+        Route::get('list', [PrincipalController::class, 'PrincipalList']);
         Route::get("profile", [PrincipalController::class, "profile"]);
-        Route::put('edit', [PrincipalController::class, 'updateProfile']);
+
+        Route::prefix('edit/')->group(function () {
+            Route::put('email', [PrincipalController::class, 'edit_email']);
+            Route::put('password', [PrincipalController::class, 'edit_password']);
+            Route::put('username', [PrincipalController::class, 'edit_username']);
+            Route::put('phone_number', [PrincipalController::class, 'edit_phone_number']);
+        });
+
+        Route::prefix('dashboard/')->group(function () {
+            Route::get('greeting', [TimeGreetingController::class, 'greet']);
+        });
+
         Route::delete('delete', [PrincipalController::class, 'deleteAccount']);
-        Route::post('import', [PrincipalController::class, 'importExcelData']);
     });
 });
 
-
-
-
-
-
-
-
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');

@@ -79,7 +79,7 @@ class StudentController extends Controller
                 ], 422);
             }
 
-            $studentImageId = $request->gender_id == 1 ? 1 : ($request->gender_id == 2 ? 2 : null);
+            $studentImageId = $request->gender_id == 1 ? 2 : ($request->gender_id == 2 ? 1 : null);
 
             $data = [
                 'fullname' => $request->fullname,

@@ -16,22 +16,20 @@ class Principal extends Authenticatable
     protected $table = 'principals';
     protected $fillable = [
         'principal_id',
-        'name',
+        'fullname',
+        'nickname',
+        'birth_date',
+        'principal_number',
         'phone_number',
         'email',
         'username',
         'password',
-        'image',
-        'principal_avatar_id',
+        'principal_image_id',
+        'gender_id',
         'role_id',
     ];
     
     public $timestamps = false;
-
-    public function avatar()
-    {
-        return $this->belongsTo(PrincipalAvatar::class, 'avatar_id');
-    }
 
     public function role()
     {
