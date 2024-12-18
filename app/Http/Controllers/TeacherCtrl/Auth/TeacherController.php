@@ -31,14 +31,8 @@ class TeacherController extends Controller
             return [
                 'id' => $teacher->id,
                 'fullname' => $teacher->fullname,
-                'nickname' => $teacher->nickname,
-                'birth_date' => $teacher->birth_date,
                 'teacher_number' => $teacher->teacher_number,
-                'gender' =>  $gender ? $gender->name : null,
-                'phone_number' => $teacher->phone_number,
-                'email' => $teacher->email,
                 'image' => $image ? $image->image : null,
-                'role_id' => $teacher->role_id,
             ];
         });
         return response()->json([

@@ -19,7 +19,6 @@ class SubjectTeacherController extends Controller
                     'class_id' => 'required|integer',
                     'subject_id' => 'required|integer',
                     'teacher_id' => 'required|integer|exists:teachers,id',
-                    'teacher_fullname' => 'required|string|max:255',
                 ]
             );
 
@@ -32,19 +31,11 @@ class SubjectTeacherController extends Controller
             }
 
             $teacher = Teacher::find($request->teacher_id);
-
-            if (!$teacher || $teacher->fullname !== $request->teacher_fullname) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Teacher fullname does not match with the teacher ID',
-                ], 422);
-            }
-
+            
             $data = [
                 'class_id' => $request->class_id,
                 'subject_id' => $request->subject_id,
                 'teacher_id' => $teacher->id,
-                'teacher_fullname' => $request->teacher_fullname, 
             ];
 
             $subject = subjectaddTeacher::create($data);

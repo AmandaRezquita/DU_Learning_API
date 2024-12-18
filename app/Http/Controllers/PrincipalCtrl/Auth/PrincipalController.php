@@ -31,14 +31,8 @@ class PrincipalController extends Controller
                 return [
                     'id' => $principal->id,
                     'fullname' => $principal->fullname,
-                    'nickname' => $principal->nickname,
-                    'birth_date' => $principal->birth_date,
                     'principal_number' => $principal->principal_number,
-                    'gender' => $gender ? $gender->name : null,
-                    'phone_number' => $principal->phone_number,
-                    'email' => $principal->email,
                     'image' => $image ? $image->image : null,
-                    'role_id' => $principal->role_id,
                 ];
             });
             return response()->json([

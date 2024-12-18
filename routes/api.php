@@ -12,6 +12,7 @@ use App\Http\Controllers\SuperadminCtrl\Auth\SchoolController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassSubjectController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\DeleteController;
+use App\Http\Controllers\SuperadminCtrl\Dashboard\DetailInforController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ScheduleController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\StudentaddClassController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\SubjectTeacherController;
@@ -61,14 +62,20 @@ Route::group([
             Route::get('total', [TotalController::class, 'getTotal']);
             Route::post('add-student', [StudentaddClassController::class, 'addStudent']);
             Route::get('class-list', [ClassController::class, 'ClassList']);
-
-            Route::prefix('delete/')->group(function () {
-                Route::delete('student/{id}', [DeleteController::class, 'deleteStudent']);
-                Route::delete('teacher/{id}', [DeleteController::class, 'deleteTeacher']);
-                Route::delete('principal/{id}', [DeleteController::class, 'deletePrincipal']);
-            });
-
             
+        });
+
+        Route::prefix('delete/')->group(function () {
+            Route::delete('student/{id}', [DeleteController::class, 'deleteStudent']);
+            Route::delete('teacher/{id}', [DeleteController::class, 'deleteTeacher']);
+            Route::delete('principal/{id}', [DeleteController::class, 'deletePrincipal']);
+        });
+
+        Route::prefix('detail/')->group(function () {
+            Route::get('student/{id}', [DetailInforController::class, 'detailStudent']);
+            Route::get('teacher/{id}', [DetailInforController::class, 'detailTeacher']);
+            Route::get('principal/{id}', [DetailInforController::class, 'detailPrincipal']);
+
         });
     
         Route::get('school-profile', [SchoolController::class, 'profile']);
