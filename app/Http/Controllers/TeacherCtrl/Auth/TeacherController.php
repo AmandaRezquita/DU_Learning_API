@@ -78,7 +78,7 @@ class TeacherController extends Controller
                 ], 422);
             }
 
-            $teacherImageId = $request->gender_id == 1 ? 1 : ($request->gender_id == 2 ? 2 : null);
+            $teacherImageId = $request->gender_id == 1 ? 2 : ($request->gender_id == 2 ? 1 : null);
 
             $data = [
                 'fullname' => $request->fullname,
