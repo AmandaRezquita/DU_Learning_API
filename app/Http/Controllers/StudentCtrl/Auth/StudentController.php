@@ -32,6 +32,7 @@ class StudentController extends Controller
                     'id' => $student->id,
                     'fullname' => $student->fullname,
                     'student_number' => $student->student_number,
+                    'phone_number' => $student->phone_number,
                     'image' => $image ? $image->image : null,
                 ];
             });
