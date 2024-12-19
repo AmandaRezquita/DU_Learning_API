@@ -13,6 +13,7 @@ use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassSubjectController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\DeleteController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\DetailInforController;
+use App\Http\Controllers\SuperadminCtrl\Dashboard\EditController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ScheduleController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\StudentaddClassController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\SubjectTeacherController;
@@ -75,7 +76,12 @@ Route::group([
             Route::get('student/{id}', [DetailInforController::class, 'detailStudent']);
             Route::get('teacher/{id}', [DetailInforController::class, 'detailTeacher']);
             Route::get('principal/{id}', [DetailInforController::class, 'detailPrincipal']);
+        });
 
+        Route::prefix('edit/')->group(function () {
+            Route::put('/student/{id}', [EditController::class, 'editStudent']);
+            Route::put('/teacher/{id}', [EditController::class, 'editTeacher']);
+            Route::put('/principal/{id}', [EditController::class, 'editPrincipal']);
         });
     
         Route::get('school-profile', [SchoolController::class, 'profile']);
