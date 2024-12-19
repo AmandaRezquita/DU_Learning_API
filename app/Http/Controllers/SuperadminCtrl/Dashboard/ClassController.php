@@ -74,7 +74,7 @@ class ClassController extends Controller
             $validate = Validator::make(
                 $request->all(),
                 [
-                    'class_name' => 'required|string|max:255',
+                    'class_name' => 'required|string|max:255|unique:school_classes',
                     'class_description' => 'required|string|max:255',
                 ]
             );

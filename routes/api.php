@@ -57,6 +57,7 @@ Route::group([
             Route::post('create-subject', [ClassSubjectController::class, 'createSubject']);
             Route::post('add-teacher', [SubjectTeacherController::class, 'addTeacher']);
             Route::post('add-schedule', [ScheduleController::class, 'addSchedule']);
+            Route::get('schedule/{class_id}', [ScheduleController::class, 'getSchedule']);
             Route::get('student', [SearchStudentController::class, 'SearchStudent']);
             Route::get('teacher', [SearchTeacherController::class, 'SearchTeacher']);
             Route::get('class', [ClassController::class, 'SearchClass']);
@@ -70,6 +71,10 @@ Route::group([
             Route::delete('student/{id}', [DeleteController::class, 'deleteStudent']);
             Route::delete('teacher/{id}', [DeleteController::class, 'deleteTeacher']);
             Route::delete('principal/{id}', [DeleteController::class, 'deletePrincipal']);
+            Route::delete('class/{id}', [DeleteController::class, 'deleteClass']);
+            Route::delete('class-teacher/{id}', [DeleteController::class, 'deleteTeacherClass']);
+            Route::delete('class-student/{id}', [DeleteController::class, 'deleteStudentClass']);
+            Route::delete('class-subject/{id}', [DeleteController::class, 'deleteClassSubject']);
         });
 
         Route::prefix('detail/')->group(function () {
