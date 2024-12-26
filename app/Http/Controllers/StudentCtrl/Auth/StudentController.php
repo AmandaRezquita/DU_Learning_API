@@ -36,7 +36,7 @@ class StudentController extends Controller
                     'image' => $image ? $image->image : null,
                 ];
             });
-    
+
             return response()->json([
                 'status' => true,
                 'message' => 'List retrieved successfully',
@@ -340,6 +340,10 @@ class StudentController extends Controller
         $data['password'] = Hash::make($password);
         $data['role_id'] = 1;
 
+         if (!isset($data['student_image_id']) || $data['student_image_id'] === null) {
+            $data['student_image_id'] = $data['gender_id'] == 1 ? 2 : ($data['gender_id'] == 2 ? 1 : null);
+        }
+
         $student = Student::create($data);
 
         Mail::to($data['email'])->send(new sendStudentEmail($username, $password));
@@ -354,27 +358,56 @@ class StudentController extends Controller
         $request->validate([
             'import_file' => [
                 'required',
-                'file'
+                'file',
+                'mimes:xlsx,xls'
             ],
         ]);
-
+    
         $importedData = Excel::toArray(new StudentImport, $request->file('import_file'));
-
-        foreach ($importedData[0] as $row) {
-            $data = [
-                'fullname' => $row[0],
-                'nickname' => $row[1],
-                'birth_date' => $row[2] = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row[2])->format('Y-m-d'),
-                'student_number' => $row[3],
-                'gender_id' => $row[4],
-                'phone_number' => $row[5],
-                'email' => $row[6],
-            ];
-            $this->handleRecordCreation($data);
+        $rows = $importedData[0];
+    
+        $header = array_map('strtolower', $rows[0]);
+        $dataRows = array_slice($rows, 1);
+    
+        foreach ($dataRows as $row) {
+            try {
+                $isRowValid = true;
+                $data = [
+                    'fullname' => $row[array_search('fullname', $header)] ?? null,
+                    'nickname' => $row[array_search('nickname', $header)] ?? null,
+                    'birth_date' => isset($row[array_search('birth_date', $header)])
+                        ? \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row[array_search('birth_date', $header)])->format('Y-m-d')
+                        : null,
+                    'student_number' => $row[array_search('student_number', $header)] ?? null,
+                    'gender_id' => $row[array_search('gender_id', $header)] ?? null,
+                    'phone_number' => $row[array_search('phone_number', $header)] ?? null,
+                    'email' => $row[array_search('email', $header)] ?? null,
+                ];
+    
+                foreach ($data as $value) {
+                    if (is_null($value)) {
+                        $isRowValid = false;
+                        break;
+                    }
+                }
+    
+                if ($isRowValid) {
+                    $this->handleRecordCreation($data);
+                }
+            } catch (\Exception $th) {
+                return response()->json([
+                    'status' => false,
+                    'errors' => $th->getMessage()
+                ], 500);
+            }
         }
-
-        return redirect()->back()->with('Success', 'Import Success');
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'Import successfully',
+        ], 200);
     }
+    
 
     public function deleteAccount(Request $request)
     {

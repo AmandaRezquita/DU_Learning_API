@@ -12,4 +12,7 @@ Route::get('/', function () {
 
 Route::get('student/import', [ViewController::class,'index']);
 
+Route::post('student/import', [StudentController::class,'importExcelData']);
+
+
 
