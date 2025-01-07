@@ -29,6 +29,17 @@ class StudentaddClassController extends Controller
                 ], 422);
             }
 
+            $exists = StudentClass::where('class_id', $request->class_id)
+                ->where('student_id', $request->student_id)
+                ->exists();
+
+            if ($exists) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Student already exists in this class',
+                ], 422);
+            }
+            
             $data = [
                 'class_id' => $request->class_id,
                 'student_id' => $request->student_id,

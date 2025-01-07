@@ -45,6 +45,17 @@ class ClassSubjectController extends Controller
                     'errors' => $validate->errors()
                 ], 422);
             }
+
+            $exists = ClassSubject::where('class_id', $request->class_id)
+                ->where('subject_name', $request->subject_name)
+                ->exists();
+
+            if ($exists) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Subject already exists in this class',
+                ], 422);
+            }
             
 
             $data = [
