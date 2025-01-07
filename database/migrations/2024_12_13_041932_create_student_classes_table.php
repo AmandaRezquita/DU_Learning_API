@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('student_classes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('class_id')->constrained('school_classes')->onDelete('cascade');
-            $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
+            $table->foreignId('student_id')->unique()->constrained('students')->onDelete('cascade');
         });
     }
 

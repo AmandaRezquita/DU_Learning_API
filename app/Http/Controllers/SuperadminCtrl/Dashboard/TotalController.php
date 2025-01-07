@@ -18,10 +18,10 @@ class TotalController extends Controller
             $principal = Principal::count();
             $class = SchoolClass::count();
 
-            $data['Guru'] = $totalTeacher;
-            $data['Murid'] = $totalStudent;
-            $data['Kelas'] = $class;
-            $data['Kepala Sekolah'] = $principal;
+            $data['guru'] = $totalTeacher;
+            $data['murid'] = $totalStudent;
+            $data['kelas'] = $class;
+            $data['kepala_sekolah'] = $principal;
 
             return response()->json([
                 'status' => true,

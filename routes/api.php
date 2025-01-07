@@ -64,6 +64,7 @@ Route::group([
             Route::get('total', [TotalController::class, 'getTotal']);
             Route::post('add-student', [StudentaddClassController::class, 'addStudent']);
             Route::get('class-list', [ClassController::class, 'ClassList']);
+            Route::get('class-detail/{class_id}', [ClassController::class, 'ClassDetail']);
             
         });
 

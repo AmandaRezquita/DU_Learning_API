@@ -30,6 +30,17 @@ class SubjectTeacherController extends Controller
                 ], 422);
             }
 
+            $exists = subjectaddTeacher::where('class_id', $request->class_id)
+                ->where('teacher_id', $request->teacher_id)
+                ->exists();
+
+            if ($exists) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Teacher already exists in this class',
+                ], 409);
+            }
+
             $teacher = Teacher::find($request->teacher_id);
             
             $data = [

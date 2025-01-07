@@ -110,4 +110,54 @@ class ClassController extends Controller
 
         }
     }
+
+    public function ClassDetail($class_id)
+    {
+        try {
+            $class = SchoolClass::with(['teachers', 'students', 'subjects'])
+                ->findOrFail($class_id);
+    
+            $classData = [
+                'id' => $class->id,
+                'name' => $class->class_name,
+                'teachers' => $class->teachers->map(function ($teacher) {
+                    $teacher = Student::find($teacher->teacher_id);
+                    return [
+                        'id' => $teacher->id,
+                        'name' => $teacher->fullname,
+                    ];
+                }),
+                'students' => $class->students->map(function ($student) {
+                    $student = Student::find($student->student_id);
+                    return [
+                        'id' => $student->id,
+                        'name' => $student->fullname,
+                    ];
+                }),
+                'subjects' => $class->subjects->map(function ($subject) {
+                    return [
+                        'id' => $subject->id,
+                        'name' => $subject->subject_name,
+                    ];
+                }),
+            ];
+    
+            return response()->json([
+                'status' => true,
+                'message' => 'Class details retrieved successfully',
+                'data' => $classData,
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Class not found',
+            ], 404);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage(),
+            ], 500);
+        }
+    }
+    
 }
