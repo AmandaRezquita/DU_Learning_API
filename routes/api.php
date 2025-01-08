@@ -64,8 +64,9 @@ Route::group([
             Route::get('total', [TotalController::class, 'getTotal']);
             Route::post('add-student', [StudentaddClassController::class, 'addStudent']);
             Route::get('class-list', [ClassController::class, 'ClassList']);
-            Route::get('class-detail/{class_id}', [ClassController::class, 'ClassDetail']);
-            
+            Route::get('subject-list/{class_id}', [ClassSubjectController::class, 'getSubject']);
+            Route::get('teacher-subject-list/{class_id}/{subject_id}', [SubjectTeacherController::class, 'getTeacherSubject']);
+            Route::get('student-list/{class_id}', [StudentaddClassController::class, 'getStudent']);
         });
 
         Route::prefix('delete/')->group(function () {
@@ -76,6 +77,7 @@ Route::group([
             Route::delete('class-teacher/{id}', [DeleteController::class, 'deleteTeacherClass']);
             Route::delete('class-student/{id}', [DeleteController::class, 'deleteStudentClass']);
             Route::delete('class-subject/{id}', [DeleteController::class, 'deleteClassSubject']);
+            Route::delete('teacher-subject/{teacher_id}/{subject_id}', [DeleteController::class, 'deleteTeacherSubject']);
         });
 
         Route::prefix('detail/')->group(function () {

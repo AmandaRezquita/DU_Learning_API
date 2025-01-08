@@ -4,6 +4,7 @@ namespace App\Http\Controllers\SuperadminCtrl\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Student\Auth\Student;
+use App\Models\Student\Auth\StudentImage;
 use App\Models\Superadmin\Dashboard\StudentClass;
 use Illuminate\Http\Request;
 use Validator;
@@ -59,6 +60,40 @@ class StudentaddClassController extends Controller
                 'errors' => $th->getMessage(),
             ], 500);
         }
+    }
+
+    public function getStudent($class_id){
+
+        
+        $students = StudentClass::where('class_id', $class_id)
+        ->with('student')
+        ->get();
+   
+    $response = [];
+    foreach ($students as $s) {
+
+        $image = StudentImage::find($s->student->student_image_id);
+
+        $response[] = [
+            'id' => $s->id,
+            'name' => $s->student ? $s->student->fullname : Null,
+            'nis' => $s->student ? $s->student->student_number : Null,
+            'image' => $image ? $image->image : null,
+        ];
+    }
+
+        if ($students->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Students not found for the given class',
+            ], 422);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successfully retrieved subjects and teachers',
+            'data' => $response,
+        ], 200);
     }
 
 }

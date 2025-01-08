@@ -19,13 +19,18 @@ class ClassController extends Controller
     {
         try {
             $classList = SchoolClass::all()->map(function ($class) {
-                $totalTeachers = subjectaddTeacher::where('class_id', $class->id)->count();
-                $totalStudents = StudentClass::where('class_id', $class->id)->count();
+                $totalTeachers = subjectaddTeacher::where('class_id', $class->id)
+                    ->distinct('teacher_id')
+                    ->count('teacher_id');
+                $totalStudents = StudentClass::where('class_id', $class->id)
+                    ->distinct('student_id')
+                    ->count('student_id');
                 $totalSubjects = ClassSubject::where('class_id', $class->id)->count();
 
                 return [
                     'id' => $class->id,
                     'class_name' => $class->class_name,
+                    'class_description' => $class->class_description,
                     'total_teachers' => $totalTeachers,
                     'total_students' => $totalStudents,
                     'total_subjects' => $totalSubjects,
@@ -116,10 +121,11 @@ class ClassController extends Controller
         try {
             $class = SchoolClass::with(['teachers', 'students', 'subjects'])
                 ->findOrFail($class_id);
-    
+
             $classData = [
                 'id' => $class->id,
                 'name' => $class->class_name,
+                'description' => $class->class_description,
                 'teachers' => $class->teachers->map(function ($teacher) {
                     $teacher = Student::find($teacher->teacher_id);
                     return [
@@ -141,7 +147,7 @@ class ClassController extends Controller
                     ];
                 }),
             ];
-    
+
             return response()->json([
                 'status' => true,
                 'message' => 'Class details retrieved successfully',
@@ -159,5 +165,5 @@ class ClassController extends Controller
             ], 500);
         }
     }
-    
+
 }
