@@ -5,36 +5,51 @@ namespace App\Http\Controllers\SuperadminCtrl\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Superadmin\Dashboard\ClassSubject;
 use App\Models\Superadmin\Dashboard\SchoolClass;
+use App\Models\Superadmin\Dashboard\subjectaddTeacher;
+use App\Models\Teacher\Auth\Teacher;
 use Illuminate\Http\Request;
 use Validator;
 
 class ClassSubjectController extends Controller
 {
-    public function subjectList()
+    public function getSubject($class_id)
     {
-        try {
-            $subjectList = ClassSubject::all();
+        $subjects = ClassSubject::where('class_id', $class_id)->get();
 
-            return response()->json([
-                'status' => true,
-                'message' => 'List retrieved successfully',
-                'data' => $subjectList
-            ], 200);
-        } catch (\Throwable $th) {
+        if ($subjects->isEmpty()) {
             return response()->json([
                 'status' => false,
-                'message' => $th->getMessage(),
-            ], 500);
+                'message' => 'Subjects not found for the given class',
+            ], 422);
         }
+
+        $response = [];
+        foreach ($subjects as $subject) {
+            $subjectTeacher = ClassSubject::where('id', $subject->id)->first();
+            $teacherName = $subjectTeacher && $subjectTeacher->teacher ? $subjectTeacher->teacher->fullname : 'Tidak ada guru';
+            $response[] = [
+                'subject_name' => $subject->subject_name,
+                'teacher_name' => $teacherName,
+            ];
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successfully retrieved subjects and teachers',
+            'data' => $response,
+        ], 200);
     }
+
+
     public function createSubject(Request $request)
     {
         try {
             $validate = Validator::make(
                 $request->all(),
                 [
-                    'subject_name' => 'required|string|max:255',
                     'class_id' => 'required|integer',
+                    'subject_name' => 'required|string|max:255',
+                    'teacher_id' => 'required|integer',
                 ]
             );
 
@@ -56,25 +71,27 @@ class ClassSubjectController extends Controller
                     'message' => 'Subject already exists in this class',
                 ], 422);
             }
-            
+
 
             $data = [
-                'subject_name' => $request->subject_name,
                 'class_id' => $request->class_id,
+                'subject_name' => $request->subject_name,
+                'teacher_id' => $request->teacher_id
             ];
 
             $subject = ClassSubject::create($data);
 
             $class = SchoolClass::find($subject->class_id);
 
+            $teacher = Teacher::find($subject->teacher_id);
 
             $success['subject_name'] = $subject->subject_name;
-            $success['class_id'] = $subject->class_id;
             $success['class_name'] = $class ? $class->class_name : null;
+            $success['teacher_name'] = $teacher ? $teacher->fullname : null;
 
             return response()->json([
                 'status' => true,
-                'message' => 'Class created successfully',
+                'message' => 'Subject created successfully',
                 'data' => $success,
             ], 200);
         } catch (\Throwable $th) {

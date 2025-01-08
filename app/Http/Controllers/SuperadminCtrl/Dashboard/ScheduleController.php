@@ -15,7 +15,7 @@ class ScheduleController extends Controller
     {
         $validate = Validator::make($request->all(), [
             'class_id' => 'required|integer',
-            'day' => 'required|string',
+            'day' => 'required|string|unique:schedules,day',
             'subjects' => 'required|array',
             'subjects.*.subject_id' => 'required|integer|exists:class_subjects,id',
             'subjects.*.start_time' => 'required|date_format:H:i',
@@ -105,7 +105,7 @@ class ScheduleController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Schedule not found',
-            ], 404);
+            ], 422);
         }
 
         $schedule->delete();
@@ -115,4 +115,5 @@ class ScheduleController extends Controller
             'message' => 'Schedule deleted successfully',
         ], 200);
     }
+
 }

@@ -15,16 +15,21 @@ class subjectaddTeacher extends Model
         'subject_id',
         'teacher_id',
     ];
-
     public function teacher()
     {
-        return $this->hasOne(Teacher::class, 'fullname');
+        return $this->belongsTo(Teacher::class, 'teacher_id');
     }
 
-    public function Subject()
+
+    public function Subject() 
     {
         return $this->belongsTo(ClassSubject::class, 'subject_id');
     }
 
+    public function SchoolClass()
+    {
+        return $this->belongsTo(SchoolClass::class, 'class_id');
+    }
+    
     public $timestamps = false;
 }

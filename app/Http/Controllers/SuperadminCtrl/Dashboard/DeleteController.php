@@ -27,7 +27,7 @@ class DeleteController extends Controller
             }
 
             $student->delete();
-            
+
             auth()->guard('student')->logout();
 
             return response()->json([
@@ -55,7 +55,7 @@ class DeleteController extends Controller
             }
 
             $teacher->delete();
-            
+
             auth()->guard('teacher')->logout();
 
             return response()->json([
@@ -83,7 +83,7 @@ class DeleteController extends Controller
             }
 
             $principal->delete();
-            
+
             auth()->guard('principal')->logout();
 
             return response()->json([
@@ -111,7 +111,7 @@ class DeleteController extends Controller
             }
 
             $class->delete();
-            
+
             return response()->json([
                 'status' => true,
                 'message' => 'Class deleted successfully',
@@ -137,7 +137,7 @@ class DeleteController extends Controller
             }
 
             $class->delete();
-            
+
             return response()->json([
                 'status' => true,
                 'message' => 'Teacher deleted successfully',
@@ -163,7 +163,7 @@ class DeleteController extends Controller
             }
 
             $class->delete();
-            
+
             return response()->json([
                 'status' => true,
                 'message' => 'Student deleted successfully',
@@ -189,7 +189,7 @@ class DeleteController extends Controller
             }
 
             $class->delete();
-            
+
             return response()->json([
                 'status' => true,
                 'message' => 'Subject deleted successfully',
@@ -201,4 +201,33 @@ class DeleteController extends Controller
             ], 500);
         }
     }
+
+    public function deleteTeacherSubject(Request $request, $teacher_id, $subject_id)
+    {
+        try {
+            $class = subjectaddTeacher::where('teacher_id', $teacher_id)
+                ->where('subject_id', $subject_id)
+                ->first();
+
+            if (!$class) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Teacher not found for the specified subject'
+                ], 422);
+            }
+
+            $class->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Teacher deleted successfully from the subject',
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
 }
