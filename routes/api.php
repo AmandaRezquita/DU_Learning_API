@@ -67,6 +67,10 @@ Route::group([
             Route::get('subject-list/{class_id}', [ClassSubjectController::class, 'getSubject']);
             Route::get('teacher-subject-list/{class_id}/{subject_id}', [SubjectTeacherController::class, 'getTeacherSubject']);
             Route::get('student-list/{class_id}', [StudentaddClassController::class, 'getStudent']);
+
+            Route::get('get-days', [ScheduleController::class, 'getDays']);
+            Route::put('edit-schedule/{id}', [ScheduleController::class, 'updateSchedule']);
+
         });
 
         Route::prefix('delete/')->group(function () {
@@ -78,6 +82,7 @@ Route::group([
             Route::delete('class-student/{id}', [DeleteController::class, 'deleteStudentClass']);
             Route::delete('class-subject/{id}', [DeleteController::class, 'deleteClassSubject']);
             Route::delete('teacher-subject/{teacher_id}/{subject_id}', [DeleteController::class, 'deleteTeacherSubject']);
+            Route::delete('schedule/{id}', [DeleteController::class, 'deleteSchedule']);
         });
 
         Route::prefix('detail/')->group(function () {

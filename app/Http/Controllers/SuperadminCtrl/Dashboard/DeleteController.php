@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Principal\Auth\Principal;
 use App\Models\Student\Auth\Student;
 use App\Models\Superadmin\Dashboard\ClassSubject;
+use App\Models\Superadmin\Dashboard\Schedule;
 use App\Models\Superadmin\Dashboard\SchoolClass;
 use App\Models\Superadmin\Dashboard\StudentClass;
 use App\Models\Superadmin\Dashboard\subjectaddTeacher;
@@ -221,6 +222,32 @@ class DeleteController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Teacher deleted successfully from the subject',
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function deleteSchedule(Request $request, $id)
+    {
+        try {
+            $schedule = Schedule::find($id);
+
+            if (!$schedule) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Schedule not found'
+                ], 404);
+            }
+
+            $schedule->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Schedule deleted successfully',
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([

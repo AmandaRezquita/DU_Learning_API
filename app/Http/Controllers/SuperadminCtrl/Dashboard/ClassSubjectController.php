@@ -28,6 +28,7 @@ class ClassSubjectController extends Controller
             $subjectTeacher = ClassSubject::where('id', $subject->id)->first();
             $teacherName = $subjectTeacher && $subjectTeacher->teacher ? $subjectTeacher->teacher->fullname : 'Tidak ada guru';
             $response[] = [
+                'id' => $subject->id,
                 'subject_name' => $subject->subject_name,
                 'teacher_name' => $teacherName,
             ];
