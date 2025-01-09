@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('add_materials', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('class_id')->constrained('school_classes');
             $table->foreignId('subject_id')->constrained('class_subjects');
             $table->string('title');
-            $table->string('description');
+            $table->text('description');
             $table->string('file');
         });
     }

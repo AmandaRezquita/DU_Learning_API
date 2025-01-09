@@ -19,6 +19,7 @@ use App\Http\Controllers\SuperadminCtrl\Dashboard\StudentaddClassController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\SubjectTeacherController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\TotalController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherController;
+use App\Http\Controllers\TeacherCtrl\Dashboard\MaterialsController;
 use App\Http\Controllers\TeacherCtrl\Dashboard\SearchTeacherController;
 use App\Http\Controllers\TimeGreetingController;
 use Illuminate\Support\Facades\Route;
@@ -71,6 +72,10 @@ Route::group([
             Route::get('get-days', [ScheduleController::class, 'getDays']);
             Route::put('edit-schedule/{id}', [ScheduleController::class, 'updateSchedule']);
 
+            Route::post('create-material', [MaterialsController::class, 'addMaterials']);
+            Route::get('material-list/{class_id}/{subject_id}', [MaterialsController::class, 'getMaterials']);
+            Route::put('edit-material/{id}', [MaterialsController::class, 'editMaterials']);
+
         });
 
         Route::prefix('delete/')->group(function () {
@@ -83,6 +88,7 @@ Route::group([
             Route::delete('class-subject/{id}', [DeleteController::class, 'deleteClassSubject']);
             Route::delete('teacher-subject/{teacher_id}/{subject_id}', [DeleteController::class, 'deleteTeacherSubject']);
             Route::delete('schedule/{id}', [DeleteController::class, 'deleteSchedule']);
+            Route::delete('material/{id}', [DeleteController::class, 'deleteMaterial']);
         });
 
         Route::prefix('detail/')->group(function () {
