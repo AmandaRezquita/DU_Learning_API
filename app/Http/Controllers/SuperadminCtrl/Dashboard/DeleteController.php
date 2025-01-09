@@ -11,7 +11,9 @@ use App\Models\Superadmin\Dashboard\SchoolClass;
 use App\Models\Superadmin\Dashboard\StudentClass;
 use App\Models\Superadmin\Dashboard\subjectaddTeacher;
 use App\Models\Teacher\Auth\Teacher;
+use App\Models\Teacher\Dashboard\AddMaterials;
 use Illuminate\Http\Request;
+use Storage;
 
 class DeleteController extends Controller
 {
@@ -257,4 +259,33 @@ class DeleteController extends Controller
         }
     }
 
+    public function deleteMaterial(Request $request, $id)
+    {
+        try {
+            $material = AddMaterials::find($id);
+
+            if (!$material) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Material not found'
+                ], 404);
+            }
+
+            if ($material->file && Storage::disk('public')->exists($material->file)) {
+                Storage::disk('public')->delete($material->file);
+            }
+
+            $material->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Material deleted successfully',
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage(),
+            ], 500);
+        }
+    }
 }
