@@ -6,6 +6,9 @@ namespace App\Http\Controllers\SuperadminCtrl\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Superadmin\Dashboard\ClassSubject;
 use App\Models\Superadmin\Dashboard\Schedule;
+use App\Models\Superadmin\Dashboard\Schedule\Day;
+use App\Models\Superadmin\Dashboard\subjectaddTeacher;
+use App\Models\Teacher\Auth\Teacher;
 use Illuminate\Http\Request;
 use Validator;
 
@@ -15,11 +18,10 @@ class ScheduleController extends Controller
     {
         $validate = Validator::make($request->all(), [
             'class_id' => 'required|integer',
-            'day' => 'required|string|unique:schedules,day',
-            'subjects' => 'required|array',
-            'subjects.*.subject_id' => 'required|integer|exists:class_subjects,id',
-            'subjects.*.start_time' => 'required|date_format:H:i',
-            'subjects.*.end_time' => 'required|date_format:H:i|after:class_subjects.*.start_time',
+            'day_id' => 'required|integer',
+            'subject_id' => 'required|integer',
+            'start_time' => 'required|string|max:255|',
+            'end_time' => 'required|string|max:255|'
         ]);
 
         if ($validate->fails()) {
@@ -32,52 +34,119 @@ class ScheduleController extends Controller
 
         $schedule = Schedule::create([
             'class_id' => $request->class_id,
-            'day' => $request->day,
-            'subjects' => $request->subjects,
+            'day_id' => $request->day_id,
+            'subject_id' => $request->subject_id,
+            'start_time' => $request->start_time,
+            'end_time' => $request->end_time,
         ]);
+
+        $day = Day::find($schedule->day_id);
+        $subjectName = ClassSubject::find($schedule->subject_id);
+
+        $teacherName = $subjectName && $subjectName->teacher ? $subjectName->teacher->fullname : 'Teacher not found';
+
+        $subject = [
+            'subject' => $subjectName ? $subjectName->subject_name : 'Subject not found',
+            'teacher' => $teacherName,
+            'start_time' => $schedule->start_time,
+            'end_time' => $schedule->end_time,
+        ];
+
+
+        $response = [
+            'class_id' => $schedule->class_id,
+            'day' => $day ? $day->day : 'Unknown Day',
+            'subjects' => [$subject],
+        ];
 
         return response()->json([
             'status' => true,
             'message' => 'Schedule added successfully',
-            'data' => $schedule,
+            'data' => $response,
         ], 200);
     }
 
+
     public function getSchedule($class_id)
     {
-        $schedule = Schedule::where('class_id', $class_id)->get();
+        $schedules = Schedule::where('class_id', $class_id)
+            ->with(['day', 'subject.teacher'])
+            ->get();
 
-        if ($schedule->isEmpty()) {
+        if ($schedules->isEmpty()) {
             return response()->json([
                 'status' => false,
                 'message' => 'Schedule not found',
-            ], 404);
+            ], 422);
+        }
+
+        $daysOfWeek = [
+            'senin',
+            'selasa',
+            'rabu',
+            'kamis',
+            'jumat',
+            'sabtu',
+            'minggu'
+        ];
+
+        $groupedSchedules = [];
+        foreach ($schedules as $schedule) {
+            $dayName = $schedule->day->day ?? '';
+            $groupedSchedules[$dayName][] = [
+                'id' => $schedule->id,
+                'subject' => $schedule->subject->subject_name ?? 'Unknown Subject',
+                'teacher' => $schedule->subject->teacher->fullname ?? 'Teacher not assigned',
+                'start_time' => $schedule->start_time,
+                'end_time' => $schedule->end_time,
+            ];
+        }
+
+        $response = [];
+        foreach ($daysOfWeek as $day) {
+            if (isset($groupedSchedules[$day])) {
+                $response[] = [
+                    'day' => $day,
+                    'subjects' => $groupedSchedules[$day],
+                ];
+            } else {
+                $response[] = [
+                    'day' => $day,
+                    'subjects' => [['message' => 'Tidak ada jadwal yang tersedia']],
+                ];
+            }
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successfully fetched schedule',
+            'data' => $response,
+        ], 200);
+    }
+
+    public function getDays()
+    {
+        $days = Day::all();
+
+        if ($days->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Days not found',
+            ], 422);
         }
 
         return response()->json([
             'status' => true,
             'message' => 'Successfully',
-            'data' => $schedule,
+            'data' => $days,
         ], 200);
     }
-
     public function updateSchedule(Request $request, $id)
     {
-        $schedule = Schedule::find($id);
-
-        if (!$schedule) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Schedule not found',
-            ], 404);
-        }
-
         $validate = Validator::make($request->all(), [
-            'day' => 'sometimes|string',
-            'subjects' => 'sometimes|array',
-            'subjects.*.subject_id' => 'required_with:subjects|integer|exists:subjects,id',
-            'subjects.*.start_time' => 'required_with:subjects|date_format:H:i',
-            'subjects.*.end_time' => 'required_with:subjects|date_format:H:i|after:subjects.*.start_time',
+            'subject_id' => 'nullable|integer',
+            'start_time' => 'nullable|string|max:255',
+            'end_time' => 'nullable|string|max:255',
         ]);
 
         if ($validate->fails()) {
@@ -88,32 +157,45 @@ class ScheduleController extends Controller
             ], 422);
         }
 
-        $schedule->update($request->all());
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Schedule updated successfully',
-            'data' => $schedule,
-        ], 200);
-    }
-
-    public function deleteSchedule($id)
-    {
         $schedule = Schedule::find($id);
 
         if (!$schedule) {
             return response()->json([
                 'status' => false,
                 'message' => 'Schedule not found',
-            ], 422);
+            ], 404);
         }
 
-        $schedule->delete();
+        $oldSubject = $schedule->subject;
+
+        if ($request->has('subject_id')) {
+            $schedule->subject_id = $request->subject_id;
+            $subjectTeacher = ClassSubject::where('id', $request->subject_id)->first();
+
+        }
+
+        if ($request->has('start_time')) {
+            $schedule->start_time = $request->start_time;
+        }
+
+        if ($request->has('end_time')) {
+            $schedule->end_time = $request->end_time;
+        }
+
+        $schedule->save();
+
+        $subjectName = ClassSubject::find($schedule->subject_id);
+        $teacherName = Teacher::find($subjectTeacher->teacher_id);
 
         return response()->json([
             'status' => true,
-            'message' => 'Schedule deleted successfully',
+            'message' => 'Schedule updated successfully',
+            'data' => [
+                'subject' => $subjectName->subject_name,
+                'teacher' => $teacherName->fullname,
+                'start_time' => $schedule->start_time,
+                'end_time' => $schedule->end_time,
+            ]
         ], 200);
     }
-
 }
