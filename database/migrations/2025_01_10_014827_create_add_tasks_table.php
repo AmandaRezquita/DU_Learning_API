@@ -4,18 +4,21 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('subjectadd_teachers', function (Blueprint $table) {
+        Schema::create('add_tasks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('class_id')->constrained('school_classes');
             $table->foreignId('subject_id')->constrained('class_subjects');
-            $table->foreignId('teacher_id')->constrained('teachers');
+            $table->string('title');
+            $table->text('description');
+            $table->string('file');
+            $table->string("date");
+            $table->timestamp("due_date")->nullable();
         });
     }
 
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('subjectadd_teachers');
+        Schema::dropIfExists('add_tasks');
     }
 };

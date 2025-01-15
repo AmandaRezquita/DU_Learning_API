@@ -68,6 +68,9 @@ Route::group([
             Route::get('subject-list/{class_id}', [ClassSubjectController::class, 'getSubject']);
             Route::get('teacher-subject-list/{class_id}/{subject_id}', [SubjectTeacherController::class, 'getTeacherSubject']);
             Route::get('student-list/{class_id}', [StudentaddClassController::class, 'getStudent']);
+            Route::put('edit-subject/{id}', [ClassSubjectController::class, 'updateSubject']);
+            Route::put('edit-class/{id}', [ClassController::class, 'updateClass']);
+
 
             Route::get('get-days', [ScheduleController::class, 'getDays']);
             Route::put('edit-schedule/{id}', [ScheduleController::class, 'updateSchedule']);
