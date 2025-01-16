@@ -76,6 +76,7 @@ class StudentaddClassController extends Controller
 
         $response[] = [
             'id' => $s->id,
+            'student_id' => $s->student_id,
             'name' => $s->student ? $s->student->fullname : Null,
             'nis' => $s->student ? $s->student->student_number : Null,
             'image' => $image ? $image->image : null,

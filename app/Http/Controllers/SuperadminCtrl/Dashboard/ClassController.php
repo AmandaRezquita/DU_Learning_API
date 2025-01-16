@@ -19,7 +19,7 @@ class ClassController extends Controller
     {
         try {
             $classList = SchoolClass::all()->map(function ($class) {
-                $totalTeachers = subjectaddTeacher::where('class_id', $class->id)
+                $totalTeachers = ClassSubject::where('class_id', $class->id)
                     ->distinct('teacher_id')
                     ->count('teacher_id');
                 $totalStudents = StudentClass::where('class_id', $class->id)
@@ -72,6 +72,53 @@ class ClassController extends Controller
         }
     }
 
+    public function updateClass(Request $request, $id){
+
+        $validate = Validator::make(
+            $request->all(),
+            [
+                'class_name' => 'nullable|string|max:255',
+                'class_description' => 'nullable|string|max:255',
+            ]
+        );
+
+        if ($validate->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation errors',
+                'errors' => $validate->errors(),
+            ], 422);
+        }
+
+        $class = SchoolClass::find($id);
+
+        if (!$class) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Class not found',
+            ], 422);
+        }
+
+        if ($request->has('class_name') && $request->class_name !== null) {
+            $class->class_name = $request->class_name;
+        }
+
+        if ($request->has('class_description') && $request->class_description !== null) {
+            $class->class_description = $request->class_description;
+        }
+
+        $class->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Subject updated successfully',
+            'data' => [
+                'id' => $class->id,
+                'class_name' => $class->class_name,
+                'class_description' => $class->class_description,
+            ]
+        ], 200);
+    }
 
     public function createClass(Request $request)
     {
@@ -87,8 +134,7 @@ class ClassController extends Controller
             if ($validate->fails()) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'error',
-                    'errors' => $validate->errors()
+                    'message' => $validate->errors()
                 ], 422);
             }
 

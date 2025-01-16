@@ -16,13 +16,6 @@ class ClassSubjectController extends Controller
     {
         $subjects = ClassSubject::where('class_id', $class_id)->get();
 
-        if ($subjects->isEmpty()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Subjects not found for the given class',
-            ], 422);
-        }
-
         $response = [];
         foreach ($subjects as $subject) {
             $subjectTeacher = ClassSubject::where('id', $subject->id)->first();
@@ -38,6 +31,57 @@ class ClassSubjectController extends Controller
             'status' => true,
             'message' => 'Successfully retrieved subjects and teachers',
             'data' => $response,
+        ], 200);
+    }
+
+    public function updateSubject(Request $request, $id){
+
+        $validate = Validator::make(
+            $request->all(),
+            [
+                'subject_name' => 'nullable|string|max:255',
+                'teacher_id' => 'nullable|integer',
+            ]
+        );
+
+        if ($validate->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation errors',
+                'errors' => $validate->errors(),
+            ], 422);
+        }
+
+        $subject = ClassSubject::find($id);
+
+        if (!$subject) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Subject not found',
+            ], 422);
+        }
+
+        if ($request->has('subject_name') && $request->subject_name !== null) {
+            $subject->subject_name = $request->subject_name;
+        }
+
+        if ($request->has('teacher_id') && $request->teacher_id !== null) {
+            $subject->teacher_id = $request->teacher_id;
+        }
+
+        $subject->save();
+
+        $subjectTeacher = ClassSubject::where('id', $subject->id)->first();
+        $teacherName = $subjectTeacher && $subjectTeacher->teacher ? $subjectTeacher->teacher->fullname : 'Tidak ada guru';
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Subject updated successfully',
+            'data' => [
+                'id' => $subject->id,
+                'subject_name' => $subject->subject_name,
+                'teacher_name' => $teacherName,
+            ]
         ], 200);
     }
 

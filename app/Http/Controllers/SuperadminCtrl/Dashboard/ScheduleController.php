@@ -73,13 +73,6 @@ class ScheduleController extends Controller
             ->with(['day', 'subject.teacher'])
             ->get();
 
-        if ($schedules->isEmpty()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Schedule not found',
-            ], 422);
-        }
-
         $daysOfWeek = [
             'senin',
             'selasa',
@@ -112,7 +105,7 @@ class ScheduleController extends Controller
             } else {
                 $response[] = [
                     'day' => $day,
-                    'subjects' => [['message' => 'Tidak ada jadwal yang tersedia']],
+                    'subjects' => [],
                 ];
             }
         }
@@ -163,7 +156,7 @@ class ScheduleController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Schedule not found',
-            ], 404);
+            ], 422);
         }
 
         $oldSubject = $schedule->subject;

@@ -3,14 +3,15 @@
 namespace App\Http\Controllers\TeacherCtrl\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Models\Teacher\Dashboard\AddMaterials;
+use App\Models\Teacher\Dashboard\AddTask;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Carbon;
+use Storage;
+use Validator;
 
-class MaterialsController extends Controller
+class TaskController extends Controller
 {
-    public function addMaterials(Request $request)
+    public function addTask(Request $request)
     {
         try {
             $validate = Validator::make(
@@ -21,6 +22,7 @@ class MaterialsController extends Controller
                     'title' => 'required|string|max:255',
                     'description' => 'required|string|max:255',
                     'file' => 'required|file|mimes:pdf,doc,docx|max:2048',
+                    'due_date' => 'nullable|date_format:Y-m-d H:i',
                 ]
             );
 
@@ -37,59 +39,66 @@ class MaterialsController extends Controller
                 $filePath = $request->file('file')->store('file', 'public');
             }
 
-            $material = AddMaterials::create([
+            $task = AddTask::create([
                 'class_id' => $request->class_id,
                 'subject_id' => $request->subject_id,
                 'title' => $request->title,
                 'description' => $request->description,
                 'file' => $filePath,
+                'date' => now(),
+                'due_date' => $request->due_date,
             ]);
 
             return response()->json([
                 'status' => true,
-                'message' => 'Material added successfully',
+                'message' => 'Task added successfully',
                 'data' => [
-                    'id' => $material->id,
-                    'class_id' => $material->class_id,
-                    'subject_id' => $material->subject_id,
-                    'title' => $material->title,
-                    'description' => $material->description,
-                    'file' => asset('storage/' . $material->file),
+                    'id' => $task->id,
+                    'class_id' => $task->class_id,
+                    'subject_id' => $task->subject_id,
+                    'title' => $task->title,
+                    'description' => $task->description,
+                    'file' => asset('storage/' . $task->file),
+                    'date' => Carbon::parse($task->date)->translatedFormat('d F Y'),
+                    'due_date' => $task->due_date ? Carbon::parse($task->due_date)->translatedFormat('d F Y') : null,
+                    'due_date_hour' => $task->due_date ? Carbon::parse($task->due_date)->translatedFormat('H:i') : null,
                 ],
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Failed to add material',
+                'message' => 'Failed to add task',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
 
-    public function getMaterials($class_id, $subject_id)
+    public function getTask($class_id, $subject_id)
     {
-        $materialList = AddMaterials::where('class_id', $class_id)
+        $taskList = AddTask::where('class_id', $class_id)
             ->where('subject_id', $subject_id)
             ->get();
 
         $response = [];
-        foreach ($materialList as $material) {
+        foreach ($taskList as $task) {
             $response[] = [
-                'id' => $material->id,
-                'title' => $material->title,
-                'description' => $material->description,
-                'file' => asset('storage/' . $material->file),
+                'id' => $task->id,
+                'title' => $task->title,
+                'description' => $task->description,
+                'file' => asset('storage/' . $task->file),
+                'date' => Carbon::parse($task->date)->translatedFormat('d F Y H:i'),
+                'due_date' => $task->due_date ? Carbon::parse($task->due_date)->translatedFormat('d F Y') : null,
+                'due_date_hour' => $task->due_date ? Carbon::parse($task->due_date)->translatedFormat('H:i') : null,
             ];
         }
-
         return response()->json([
             'status' => true,
-            'message' => 'Successfully',
+            'message' => 'Successfully fetched tasks',
             'data' => $response,
         ], 200);
     }
 
-    public function editMaterials(Request $request, $id)
+    public function editTask(Request $request, $id)
     {
         $validate = Validator::make(
             $request->all(),
@@ -97,6 +106,7 @@ class MaterialsController extends Controller
                 'title' => 'nullable|string|max:255',
                 'description' => 'nullable|string|max:255',
                 'file' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+                'due_date' => 'nullable|date_format:Y-m-d H:i',
             ]
         );
 
@@ -108,9 +118,9 @@ class MaterialsController extends Controller
             ], 422);
         }
 
-        $material = AddMaterials::find($id);
+        $task = AddTask::find($id);
 
-        if (!$material) {
+        if (!$task) {
             return response()->json([
                 'status' => false,
                 'message' => 'Material not found',
@@ -118,32 +128,37 @@ class MaterialsController extends Controller
         }
 
         if ($request->has('title') && $request->title !== null) {
-            $material->title = $request->title;
+            $task->title = $request->title;
         }
 
         if ($request->has('description') && $request->description !== null) {
-            $material->description = $request->description;
+            $task->description = $request->description;
         }
 
         if ($request->hasFile('file') && $request->file !== null) {
-            if ($material->file && Storage::disk('public')->exists($material->file)) {
-                Storage::disk('public')->delete($material->file);
+            if ($task->file && Storage::disk('public')->exists($task->file)) {
+                Storage::disk('public')->delete($task->file);
             }
 
             $path = $request->file('file')->store('file', 'public');
-            $material->file = $path;
+            $task->file = $path;
         }
 
-        $material->save();
+        if ($request->has('due_date') && $request->due_date !== null) {
+            $task->due_date = $request->due_date;
+        }
+
+        $task->save();
 
         return response()->json([
             'status' => true,
             'message' => 'Material updated successfully',
             'data' => [
-                'id' => $material->id,
-                'title' => $material->title,
-                'description' => $material->description,
-                'file' => $material->file ? asset('storage/' . $material->file) : null,
+                'id' => $task->id,
+                'title' => $task->title,
+                'description' => $task->description,
+                'file' => $task->file ? asset('storage/' . $task->file) : null,
+                'due_date' => $task->due_date,
             ]
         ], 200);
     }
