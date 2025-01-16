@@ -82,13 +82,6 @@ class MaterialsController extends Controller
             ];
         }
 
-        if ($materialList->isEmpty()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Material not found',
-            ], 422);
-        }
-
         return response()->json([
             'status' => true,
             'message' => 'Successfully',
@@ -121,7 +114,7 @@ class MaterialsController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Material not found',
-            ], 404);
+            ], 422);
         }
 
         if ($request->has('title') && $request->title !== null) {
