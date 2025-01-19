@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\TeacherCtrl\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Student\Dashboard\StudentTask;
 use App\Models\Teacher\Dashboard\AddTask;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -162,4 +163,37 @@ class TaskController extends Controller
             ]
         ], 200);
     }
+
+    public function gradeTask(Request $request)
+    {
+        $validate = Validator::make($request->all(), [
+            'student_task_id' => 'required|integer',
+            'score' => 'required|integer|min:0|max:100',
+        ]);
+
+        if ($validate->fails()) {
+            return response()->json(['status' => false, 'errors' => $validate->errors()], 422);
+        }
+
+        $studentTask = StudentTask::findOrFail($request->id);
+        $studentTask->update([
+            'score' => $request->score,
+            'status' => 'Graded',
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Task gradd successfully',
+            'data' => [
+                'id' => $studentTask->id,
+                'task_id' => $studentTask->task_id,
+                'student_id' => $studentTask->student_id,
+                'file' => asset('storage/' . $studentTask->file),
+                'status' => $studentTask->status,
+                'score' => $studentTask->score,
+                'submitted_at' => Carbon::parse($studentTask->submitted_at)->translatedFormat('d F Y H:i'),
+            ]
+        ], 200);
+    }
+
 }

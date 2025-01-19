@@ -8,6 +8,7 @@ use App\Http\Controllers\PrincipalCtrl\Auth\PrincipalController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StudentCtrl\Auth\StudentController;
 use App\Http\Controllers\StudentCtrl\Dashboard\SearchStudentController;
+use App\Http\Controllers\StudentCtrl\Dashboard\StudentTaskController;
 use App\Http\Controllers\SuperadminCtrl\Auth\SchoolController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassSubjectController;
@@ -130,6 +131,8 @@ Route::group([
 
         Route::prefix('dashboard/')->group(function () {
             Route::get('greeting', [TimeGreetingController::class, 'greet']);
+            Route::get('get-task/{student_id}/{class_id}/{subject_id}', [StudentTaskController::class, 'StudentGetTask']);
+            Route::post('add-task', [StudentTaskController::class, 'StudentAddTask']);
         });
 
         Route::delete('delete', [StudentController::class, 'deleteAccount']);
