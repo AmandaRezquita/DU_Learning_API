@@ -5,6 +5,7 @@ namespace App\Http\Controllers\SuperadminCtrl\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Principal\Auth\Principal;
 use App\Models\Student\Auth\Student;
+use App\Models\Student\Dashboard\StudentTask;
 use App\Models\Superadmin\Dashboard\ClassSubject;
 use App\Models\Superadmin\Dashboard\Schedule;
 use App\Models\Superadmin\Dashboard\SchoolClass;
@@ -266,6 +267,36 @@ class DeleteController extends Controller
     {
         try {
             $task = AddTask::find($id);
+
+            if (!$task) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Task not found'
+                ], 422);
+            }
+
+            if ($task->file && Storage::disk('public')->exists($task->file)) {
+                Storage::disk('public')->delete($task->file);
+            }
+
+            $task->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Task deleted successfully',
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function deleteStudentTask (Request $request, $id)
+    {
+        try {
+            $task = StudentTask::find($id);
 
             if (!$task) {
                 return response()->json([

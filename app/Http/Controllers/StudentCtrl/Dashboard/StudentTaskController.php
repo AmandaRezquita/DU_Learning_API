@@ -7,6 +7,7 @@ use App\Models\Student\Dashboard\StudentTask;
 use App\Models\Teacher\Dashboard\AddTask;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Storage;
 use Validator;
 
 class StudentTaskController extends Controller
@@ -62,7 +63,7 @@ class StudentTaskController extends Controller
                 return response()->json(['status' => false, 'errors' => $validate->errors()], 422);
             }
 
-            $filePath = $request->file('file')->store('assignments', 'public');
+            $filePath = $request->file('file')->store('file', 'public');
 
             $studentTask = StudentTask::create([
                 'task_id' => $request->task_id,
@@ -91,6 +92,53 @@ class StudentTaskController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function StudentEditTask(Request $request, $id){
+        $validate = Validator::make(
+            $request->all(),
+            [
+                'file' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            ]
+        );
+
+        
+        if ($validate->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation errors',
+                'errors' => $validate->errors(),
+            ], 422);
+        }
+
+        $task = StudentTask::find($id);
+
+        if (!$task) {
+            return response()->json([
+                'status' => false,
+                'message' => 'task not found',
+            ], 422);
+        }
+
+        if ($request->hasFile('file') && $request->file !== null) {
+            if ($task->file && Storage::disk('public')->exists($task->file)) {
+                Storage::disk('public')->delete($task->file);
+            }
+
+            $path = $request->file('file')->store('file', options: 'public');
+            $task->file = $path;
+        }
+
+        $task->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Task updated successfully',
+            'data' => [
+                'file' => $task->file ? asset('storage/' . $task->file) : null,
+            ]
+        ], 200);
+
     }
 
 }
