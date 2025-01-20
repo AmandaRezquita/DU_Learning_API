@@ -18,8 +18,8 @@ return new class extends Migration
         });
 
         DB::table('teacher_images')->insert([
-            ['image' => 'https://smg.datautama.id/storage/teacher1.png', 'gender_id' => 1],
-            ['image' => 'https://smg.datautama.id/storage/teacher2.png', 'gender_id' => 2], 
+            ['image' => 'https://smg.datautama.id/storage/image/teacher1.png', 'gender_id' => 1],
+            ['image' => 'https://smg.datautama.id/storage/image/teacher2.png', 'gender_id' => 2], 
         ]);
     }
 
