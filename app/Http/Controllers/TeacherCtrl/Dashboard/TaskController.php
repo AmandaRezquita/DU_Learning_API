@@ -175,10 +175,10 @@ class TaskController extends Controller
             return response()->json(['status' => false, 'errors' => $validate->errors()], 422);
         }
 
-        $studentTask = StudentTask::findOrFail($request->id);
+        $studentTask = StudentTask::findOrFail($request->student_task_id);
         $studentTask->update([
             'score' => $request->score,
-            'status' => 'Graded',
+            'status' => 'Selesai',
         ]);
 
         return response()->json([

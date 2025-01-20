@@ -153,6 +153,7 @@ Route::group([
 
         Route::prefix('dashboard/')->group(function () {
             Route::get('greeting', [TimeGreetingController::class, 'greet']);
+            Route::post('grade', [TaskController::class, 'gradeTask']);
         });
 
         Route::delete('delete', [TeacherController::class, 'deleteAccount']);
