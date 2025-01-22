@@ -16,6 +16,7 @@ class AddTask extends Model
         'file',
         'date',
         'due_date',
+        'hour'
     ];
 
     public function studentTasks()

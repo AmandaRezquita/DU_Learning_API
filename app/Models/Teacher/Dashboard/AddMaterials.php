@@ -12,6 +12,7 @@ class AddMaterials extends Model
         'title',
         'description',
         'file',
+        'link'
     ];
 
     public $timestamps = false;

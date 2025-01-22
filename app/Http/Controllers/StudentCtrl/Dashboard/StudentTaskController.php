@@ -26,7 +26,7 @@ class StudentTaskController extends Controller
         $response = $tasks->map(function ($task) use ($student_id) {
             $studentTask = $task->studentTasks->first();
             $currentDateTime = Carbon::now();
-            $dueDateTime = Carbon::parse($task->due_date);
+            $dueDateTime = Carbon::parse($task->due_date)->setTimeFromTimeString($task->hour);
 
             $status = 'Belum Dikerjakan';
             if ($studentTask) {
@@ -40,8 +40,10 @@ class StudentTaskController extends Controller
                 'title' => $task->title,
                 'description' => $task->description,
                 'date' => Carbon::parse($task->date)->translatedFormat('d F Y'),
-                'due_date' => Carbon::parse($task->due_date)->translatedFormat('d F Y H:i'),
-                'file' => asset('storage/' . $task->file),
+                'due_date' => Carbon::parse($task->due_date)->translatedFormat('d F Y'),
+                'hour' => Carbon::parse($task->hour)->translatedFormat('H:i'),
+                'file' => $task->file ? asset('storage/' . $task->file) : null,
+                'link' => $task->link ?? null, 
                 'status' => $status,
                 'score' => $studentTask ? $studentTask->score : 0,
             ];
