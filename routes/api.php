@@ -151,10 +151,12 @@ Route::group([
             Route::post('create-task', [TaskController::class, 'addTask']);
             Route::get('task-list/{class_id}/{subject_id}', [TaskController::class, 'getTask']);
             Route::put('edit-task/{id}', [TaskController::class, 'editTask']);
+            Route::get('get-task/{class_id}/{subject_id}/{id}', [TaskController::class, 'getTaskById']);
 
             Route::post('create-material', [MaterialsController::class, 'addMaterials']);
             Route::get('material-list/{class_id}/{subject_id}', [MaterialsController::class, 'getMaterials']);
             Route::put('edit-material/{id}', [MaterialsController::class, 'editMaterials']);
+            Route::get('get-material/{class_id}/{subject_id}/{id}', [MaterialsController::class, 'getMaterialById']);
 
         });
 

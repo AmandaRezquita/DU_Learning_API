@@ -19,8 +19,8 @@ return new class extends Migration {
             $table->string('file')->nullable();
             $table->string("link")->nullable();
             $table->string("date");
-            $table->timestamp("due_date")->nullable();
-            $table->timestamp("hour")->nullable();
+            $table->date("due_date")->nullable();
+            $table->time("hour")->nullable();
         });
     }
 
