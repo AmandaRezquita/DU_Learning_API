@@ -8,6 +8,7 @@ use App\Http\Controllers\PrincipalCtrl\Auth\PrincipalController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StudentCtrl\Auth\StudentController;
 use App\Http\Controllers\StudentCtrl\Dashboard\SearchStudentController;
+use App\Http\Controllers\StudentCtrl\Dashboard\StudentTaskController;
 use App\Http\Controllers\SuperadminCtrl\Auth\SchoolController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassSubjectController;
@@ -54,7 +55,7 @@ Route::group([
     Route::prefix('superadmin/')->group(function () {
 
         Route::prefix('dashboard/')->group(function () {
-    
+
             Route::post('create-class', [ClassController::class, 'createClass']);
             Route::post('create-subject', [ClassSubjectController::class, 'createSubject']);
             Route::post('add-teacher', [SubjectTeacherController::class, 'addTeacher']);
@@ -76,14 +77,6 @@ Route::group([
             Route::get('get-days', [ScheduleController::class, 'getDays']);
             Route::put('edit-schedule/{id}', [ScheduleController::class, 'updateSchedule']);
 
-            Route::post('create-material', [MaterialsController::class, 'addMaterials']);
-            Route::get('material-list/{class_id}/{subject_id}', [MaterialsController::class, 'getMaterials']);
-            Route::put('edit-material/{id}', [MaterialsController::class, 'editMaterials']);
-
-            Route::post('create-task', [TaskController::class, 'addTask']);
-            Route::get('task-list/{class_id}/{subject_id}', [TaskController::class, 'getTask']);
-            Route::put('edit-task/{id}', [TaskController::class, 'editTask']);
-
         });
 
         Route::prefix('delete/')->group(function () {
@@ -98,6 +91,7 @@ Route::group([
             Route::delete('schedule/{id}', [DeleteController::class, 'deleteSchedule']);
             Route::delete('material/{id}', [DeleteController::class, 'deleteMaterial']);
             Route::delete('task/{id}', [DeleteController::class, 'deleteTask']);
+            Route::delete('student-task/{id}', [DeleteController::class, 'deleteStudentTask']);
         });
 
         Route::prefix('detail/')->group(function () {
@@ -111,7 +105,7 @@ Route::group([
             Route::put('/teacher/{id}', [EditController::class, 'editTeacher']);
             Route::put('/principal/{id}', [EditController::class, 'editPrincipal']);
         });
-    
+
         Route::get('school-profile', [SchoolController::class, 'profile']);
     });
 
@@ -130,6 +124,9 @@ Route::group([
 
         Route::prefix('dashboard/')->group(function () {
             Route::get('greeting', [TimeGreetingController::class, 'greet']);
+            Route::get('get-task/{student_id}/{class_id}/{subject_id}', [StudentTaskController::class, 'StudentGetTask']);
+            Route::post('add-task', [StudentTaskController::class, 'StudentAddTask']);
+            Route::put('edit-student-task/{id}', [StudentTaskController::class, 'StudentEditTask']);
         });
 
         Route::delete('delete', [StudentController::class, 'deleteAccount']);
@@ -150,6 +147,17 @@ Route::group([
 
         Route::prefix('dashboard/')->group(function () {
             Route::get('greeting', [TimeGreetingController::class, 'greet']);
+            Route::post('grade', [TaskController::class, 'gradeTask']);
+            Route::post('create-task', [TaskController::class, 'addTask']);
+            Route::get('task-list/{class_id}/{subject_id}', [TaskController::class, 'getTask']);
+            Route::put('edit-task/{id}', [TaskController::class, 'editTask']);
+            Route::get('get-task/{class_id}/{subject_id}/{id}', [TaskController::class, 'getTaskById']);
+
+            Route::post('create-material', [MaterialsController::class, 'addMaterials']);
+            Route::get('material-list/{class_id}/{subject_id}', [MaterialsController::class, 'getMaterials']);
+            Route::put('edit-material/{id}', [MaterialsController::class, 'editMaterials']);
+            Route::get('get-material/{class_id}/{subject_id}/{id}', [MaterialsController::class, 'getMaterialById']);
+
         });
 
         Route::delete('delete', [TeacherController::class, 'deleteAccount']);

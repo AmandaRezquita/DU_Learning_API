@@ -16,9 +16,11 @@ return new class extends Migration {
             $table->foreignId('subject_id')->constrained('class_subjects');
             $table->string('title');
             $table->text('description');
-            $table->string('file');
+            $table->string('file')->nullable();
+            $table->string("link")->nullable();
             $table->string("date");
-            $table->timestamp("due_date")->nullable();
+            $table->date("due_date")->nullable();
+            $table->time("hour")->nullable();
         });
     }
 
