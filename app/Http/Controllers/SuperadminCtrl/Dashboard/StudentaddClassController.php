@@ -82,14 +82,6 @@ class StudentaddClassController extends Controller
             'image' => $image ? $image->image : null,
         ];
     }
-
-        if ($students->isEmpty()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Students not found for the given class',
-            ], 422);
-        }
-
         return response()->json([
             'status' => true,
             'message' => 'Successfully retrieved subjects and teachers',

@@ -13,11 +13,6 @@ class SchoolClass extends Model
         'class_name',
         'class_description'
     ];
-    
-    public function teachers()
-    {
-        return $this->hasMany(SubjectAddTeacher::class, 'class_id');
-    }
 
     public function students()
     {

@@ -23,6 +23,7 @@ use App\Http\Controllers\TeacherCtrl\Auth\TeacherController;
 use App\Http\Controllers\TeacherCtrl\Dashboard\MaterialsController;
 use App\Http\Controllers\TeacherCtrl\Dashboard\SearchTeacherController;
 use App\Http\Controllers\TeacherCtrl\Dashboard\TaskController;
+use App\Http\Controllers\TeacherCtrl\Dashboard\TeacherSchedule;
 use App\Http\Controllers\TimeGreetingController;
 use Illuminate\Support\Facades\Route;
 
@@ -134,6 +135,10 @@ Route::group([
 
     });
 
+    Route::prefix('subject/')->group(function () {
+        Route::get('get-banner/{id}', [ClassSubjectController::class, 'getSubjectById']);
+    });
+
     Route::prefix('teacher/')->group(function () {
         Route::get('list', [TeacherController::class, 'TeacherList']);
         Route::get("profile", [TeacherController::class, "profile"]);
@@ -152,6 +157,10 @@ Route::group([
             Route::get('task-list/{class_id}/{subject_id}', [TaskController::class, 'getTask']);
             Route::put('edit-task/{id}', [TaskController::class, 'editTask']);
             Route::get('get-task/{class_id}/{subject_id}/{id}', [TaskController::class, 'getTaskById']);
+            Route::get('get-class-today/{teacher_id}', [TeacherSchedule::class, 'getTeacherClassToday']);
+            Route::get('get-class/{teacher_id}', [TeacherSchedule::class, 'getTeacherClass']);
+            Route::get('get-teacher-schedule/{teacher_id}', [TeacherSchedule::class, 'getTeacherSchedule']);
+
 
             Route::post('create-material', [MaterialsController::class, 'addMaterials']);
             Route::get('material-list/{class_id}/{subject_id}', [MaterialsController::class, 'getMaterials']);
