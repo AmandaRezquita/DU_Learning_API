@@ -34,7 +34,8 @@ class ClassSubjectController extends Controller
         ], 200);
     }
 
-    public function updateSubject(Request $request, $id){
+    public function updateSubject(Request $request, $id)
+    {
 
         $validate = Validator::make(
             $request->all(),
@@ -147,4 +148,29 @@ class ClassSubjectController extends Controller
 
         }
     }
+
+    public function getSubjectById($id)
+    {
+        $subject = ClassSubject::with('teacher')->find($id);
+    
+        if (!$subject) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Subject not found',
+            ], 200);
+        }
+    
+        $response = [
+            'id' => $subject->id,
+            'subject_name' => $subject->subject_name,
+            'teacher_name' => $subject->teacher ? $subject->teacher->fullname : 'Tidak ada guru',
+        ];
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'Successfully retrieved subject',
+            'data' => $response,
+        ], 200);
+    }
+    
 }
