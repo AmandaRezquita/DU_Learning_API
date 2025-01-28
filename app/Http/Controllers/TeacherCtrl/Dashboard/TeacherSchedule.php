@@ -5,14 +5,15 @@ namespace App\Http\Controllers\TeacherCtrl\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Superadmin\Dashboard\ClassSubject;
 use App\Models\Superadmin\Dashboard\Schedule;
-use App\Models\Superadmin\Dashboard\SchoolClass;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class TeacherSchedule extends Controller
 {
-    public function getTeacherClassToday($teacher_id)
+
+    public function getTeacherClassToday()
     {
+        $teacher_id = auth()->id(); 
         $todayDayId = Carbon::now()->dayOfWeekIso;
 
         $classList = Schedule::whereHas('subject', function ($query) use ($teacher_id) {
@@ -25,8 +26,8 @@ class TeacherSchedule extends Controller
         $response = $classList->map(function ($schedule) {
             return [
                 'id' => $schedule->id,
-                'class_name' => $schedule->class ? $schedule->class->class_name : null,
-                'subject_name' => $schedule->subject ? $schedule->subject->subject_name : null,
+                'class_name' => $schedule->class->class_name ?? null,
+                'subject_name' => $schedule->subject->subject_name ?? null,
             ];
         });
 
@@ -37,9 +38,10 @@ class TeacherSchedule extends Controller
         ], 200);
     }
 
-
-    public function getTeacherClass($teacher_id)
+    public function getTeacherClass()
     {
+        $teacher_id = auth()->id();
+
         $classList = ClassSubject::where('teacher_id', $teacher_id)
             ->with('class')
             ->get();
@@ -47,7 +49,7 @@ class TeacherSchedule extends Controller
         $response = $classList->map(function ($class) {
             return [
                 'id' => $class->id,
-                'class_name' => $class->class ? $class->class->class_name : null,
+                'class_name' => $class->class->class_name ?? null,
                 'subject_name' => $class->subject_name,
             ];
         });
@@ -59,7 +61,9 @@ class TeacherSchedule extends Controller
         ], 200);
     }
 
-    public function getTeacherScheduleToday($teacher_id){
+    public function getTeacherScheduleToday()
+    {
+        $teacher_id = auth()->id();
         $todayDayId = Carbon::now()->dayOfWeekIso;
 
         $classList = Schedule::whereHas('subject', function ($query) use ($teacher_id) {
@@ -72,8 +76,8 @@ class TeacherSchedule extends Controller
         $response = $classList->map(function ($schedule) {
             return [
                 'id' => $schedule->id,
-                'class_name' => $schedule->class ? $schedule->class->class_name : null,
-                'subject_name' => $schedule->subject ? $schedule->subject->subject_name : null,
+                'class_name' => $schedule->class->class_name ?? null,
+                'subject_name' => $schedule->subject->subject_name ?? null,
                 'start_time' => $schedule->start_time,
                 'end_time' => $schedule->end_time,
             ];
@@ -86,17 +90,15 @@ class TeacherSchedule extends Controller
         ], 200);
     }
 
-    public function getTeacherSchedule($teacher_id)
+    public function getTeacherSchedule()
     {
-        $todayDayId = Carbon::now()->dayOfWeekIso;
-    
-        $schedules = Schedule::where('day_id', $todayDayId)
-            ->whereHas('subject', function ($query) use ($teacher_id) {
-                $query->where('teacher_id', $teacher_id);
-            })
-            ->with(['class', 'subject.teacher', 'day']) 
+        $teacher_id = auth()->id();
+        $schedules = Schedule::whereHas('subject', function ($query) use ($teacher_id) {
+            $query->where('teacher_id', $teacher_id);
+        })
+            ->with(['class', 'subject.teacher', 'day'])
             ->get();
-    
+
         $daysOfWeek = [
             1 => 'senin',
             2 => 'selasa',
@@ -106,7 +108,7 @@ class TeacherSchedule extends Controller
             6 => 'sabtu',
             7 => 'minggu'
         ];
-    
+
         $groupedSchedules = [];
         foreach ($schedules as $schedule) {
             $dayName = $schedule->day->day ?? 'Unknown Day';
@@ -119,7 +121,7 @@ class TeacherSchedule extends Controller
                 'end_time' => $schedule->end_time,
             ];
         }
-    
+
         $response = [];
         foreach ($daysOfWeek as $dayId => $dayName) {
             $response[] = [
@@ -127,12 +129,11 @@ class TeacherSchedule extends Controller
                 'subjects' => $groupedSchedules[$dayName] ?? [],
             ];
         }
-    
+
         return response()->json([
             'status' => true,
             'message' => 'Successfully fetched schedule',
             'data' => $response,
         ], 200);
     }
-    
 }

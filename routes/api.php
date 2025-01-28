@@ -157,10 +157,10 @@ Route::group([
             Route::get('task-list/{class_id}/{subject_id}', [TaskController::class, 'getTask']);
             Route::put('edit-task/{id}', [TaskController::class, 'editTask']);
             Route::get('get-task/{class_id}/{subject_id}/{id}', [TaskController::class, 'getTaskById']);
-            Route::get('get-class-today/{teacher_id}', [TeacherSchedule::class, 'getTeacherClassToday']);
-            Route::get('get-class/{teacher_id}', [TeacherSchedule::class, 'getTeacherClass']);
-            Route::get('get-teacher-schedule-today/{teacher_id}', [TeacherSchedule::class, 'getTeacherScheduleToday']);
-            Route::get('get-teacher-schedule/{teacher_id}', [TeacherSchedule::class, 'getTeacherSchedule']);
+            Route::get('get-class-today', [TeacherSchedule::class, 'getTeacherClassToday']);
+            Route::get('get-class', [TeacherSchedule::class, 'getTeacherClass']);
+            Route::get('get-teacher-schedule-today', [TeacherSchedule::class, 'getTeacherScheduleToday']);
+            Route::get('get-teacher-schedule', [TeacherSchedule::class, 'getTeacherSchedule']);
 
 
             Route::post('create-material', [MaterialsController::class, 'addMaterials']);
