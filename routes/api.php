@@ -159,6 +159,7 @@ Route::group([
             Route::get('get-task/{class_id}/{subject_id}/{id}', [TaskController::class, 'getTaskById']);
             Route::get('get-class-today/{teacher_id}', [TeacherSchedule::class, 'getTeacherClassToday']);
             Route::get('get-class/{teacher_id}', [TeacherSchedule::class, 'getTeacherClass']);
+            Route::get('get-teacher-schedule-today/{teacher_id}', [TeacherSchedule::class, 'getTeacherScheduleToday']);
             Route::get('get-teacher-schedule/{teacher_id}', [TeacherSchedule::class, 'getTeacherSchedule']);
 
 

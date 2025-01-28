@@ -59,7 +59,7 @@ class TeacherSchedule extends Controller
         ], 200);
     }
 
-    public function getTeacherSchedule($teacher_id){
+    public function getTeacherScheduleToday($teacher_id){
         $todayDayId = Carbon::now()->dayOfWeekIso;
 
         $classList = Schedule::whereHas('subject', function ($query) use ($teacher_id) {
@@ -85,4 +85,54 @@ class TeacherSchedule extends Controller
             'data' => $response,
         ], 200);
     }
+
+    public function getTeacherSchedule($teacher_id)
+    {
+        $todayDayId = Carbon::now()->dayOfWeekIso;
+    
+        $schedules = Schedule::where('day_id', $todayDayId)
+            ->whereHas('subject', function ($query) use ($teacher_id) {
+                $query->where('teacher_id', $teacher_id);
+            })
+            ->with(['class', 'subject.teacher', 'day']) 
+            ->get();
+    
+        $daysOfWeek = [
+            1 => 'senin',
+            2 => 'selasa',
+            3 => 'rabu',
+            4 => 'kamis',
+            5 => 'jumat',
+            6 => 'sabtu',
+            7 => 'minggu'
+        ];
+    
+        $groupedSchedules = [];
+        foreach ($schedules as $schedule) {
+            $dayName = $schedule->day->day ?? 'Unknown Day';
+            $groupedSchedules[$dayName][] = [
+                'id' => $schedule->id,
+                'subject' => $schedule->subject->subject_name ?? 'Unknown Subject',
+                'teacher' => $schedule->subject->teacher->fullname ?? 'Teacher not assigned',
+                'class_name' => $schedule->class->class_name ?? 'Unknown Class',
+                'start_time' => $schedule->start_time,
+                'end_time' => $schedule->end_time,
+            ];
+        }
+    
+        $response = [];
+        foreach ($daysOfWeek as $dayId => $dayName) {
+            $response[] = [
+                'day' => $dayName,
+                'subjects' => $groupedSchedules[$dayName] ?? [],
+            ];
+        }
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'Successfully fetched schedule',
+            'data' => $response,
+        ], 200);
+    }
+    
 }
