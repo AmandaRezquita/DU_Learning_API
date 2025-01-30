@@ -68,54 +68,59 @@ class ScheduleController extends Controller
 
 
     public function getSchedule($class_id)
-    {
-        $schedules = Schedule::where('class_id', $class_id)
-            ->with(['day', 'subject.teacher'])
-            ->get();
+{
+    $schedules = Schedule::where('class_id', $class_id)
+        ->with(['day', 'subject.teacher'])
+        ->get();
 
-        $daysOfWeek = [
-            'senin',
-            'selasa',
-            'rabu',
-            'kamis',
-            'jumat',
-            'sabtu',
-            'minggu'
+    $daysOfWeek = [
+        'senin',
+        'selasa',
+        'rabu',
+        'kamis',
+        'jumat',
+        'sabtu',
+        'minggu'
+    ];
+
+    $groupedSchedules = [];
+
+    foreach ($schedules as $schedule) {
+        $dayName = $schedule->day->day ?? '';
+        $groupedSchedules[$dayName][] = [
+            'id' => $schedule->id,
+            'subject' => $schedule->subject->subject_name ?? 'Unknown Subject',
+            'teacher' => $schedule->subject->teacher->fullname ?? 'Teacher not assigned',
+            'start_time' => $schedule->start_time,
+            'end_time' => $schedule->end_time,
         ];
+    }
 
-        $groupedSchedules = [];
-        foreach ($schedules as $schedule) {
-            $dayName = $schedule->day->day ?? '';
-            $groupedSchedules[$dayName][] = [
-                'id' => $schedule->id,
-                'subject' => $schedule->subject->subject_name ?? 'Unknown Subject',
-                'teacher' => $schedule->subject->teacher->fullname ?? 'Teacher not assigned',
-                'start_time' => $schedule->start_time,
-                'end_time' => $schedule->end_time,
+    $response = [];
+
+    foreach ($daysOfWeek as $day) {
+        if (isset($groupedSchedules[$day])) {
+            $sortedSubjects = collect($groupedSchedules[$day])->sortBy('start_time')->values()->all();
+
+            $response[] = [
+                'day' => $day,
+                'subjects' => $sortedSubjects,
+            ];
+        } else {
+            $response[] = [
+                'day' => $day,
+                'subjects' => [],
             ];
         }
-
-        $response = [];
-        foreach ($daysOfWeek as $day) {
-            if (isset($groupedSchedules[$day])) {
-                $response[] = [
-                    'day' => $day,
-                    'subjects' => $groupedSchedules[$day],
-                ];
-            } else {
-                $response[] = [
-                    'day' => $day,
-                    'subjects' => [],
-                ];
-            }
-        }
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Successfully fetched schedule',
-            'data' => $response,
-        ], 200);
     }
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Successfully fetched schedule',
+        'data' => $response,
+    ], 200);
+}
+
 
     public function getDays()
     {

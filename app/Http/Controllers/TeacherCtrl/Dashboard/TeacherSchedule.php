@@ -13,7 +13,7 @@ class TeacherSchedule extends Controller
 
     public function getTeacherClassToday()
     {
-        $teacher_id = auth()->id(); 
+        $teacher_id = auth()->id();
         $todayDayId = Carbon::now()->dayOfWeekIso;
 
         $classList = Schedule::whereHas('subject', function ($query) use ($teacher_id) {
@@ -81,7 +81,7 @@ class TeacherSchedule extends Controller
                 'start_time' => $schedule->start_time,
                 'end_time' => $schedule->end_time,
             ];
-        });
+        })->sortBy('start_time')->values(); 
 
         return response()->json([
             'status' => true,
@@ -89,6 +89,7 @@ class TeacherSchedule extends Controller
             'data' => $response,
         ], 200);
     }
+
 
     public function getTeacherSchedule()
     {
@@ -122,6 +123,12 @@ class TeacherSchedule extends Controller
             ];
         }
 
+        foreach ($groupedSchedules as $day => &$subjects) {
+            usort($subjects, function ($a, $b) {
+                return strtotime($a['start_time']) - strtotime($b['start_time']);
+            });
+        }
+
         $response = [];
         foreach ($daysOfWeek as $dayId => $dayName) {
             $response[] = [
@@ -136,4 +143,5 @@ class TeacherSchedule extends Controller
             'data' => $response,
         ], 200);
     }
+
 }
