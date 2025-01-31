@@ -5,6 +5,7 @@ namespace App\Http\Controllers\TeacherCtrl\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Student\Dashboard\StudentTask;
 use App\Models\Teacher\Dashboard\AddTask;
+use DateTimeZone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Storage;
@@ -43,18 +44,19 @@ class TaskController extends Controller
                 $link = $request->link;
             }
 
+            $timezone = $request->timezone ?? 'Asia/Jakarta';
+
             $task = AddTask::create([
                 'class_id' => $request->class_id,
                 'subject_id' => $request->subject_id,
                 'title' => $request->title,
                 'description' => $request->description,
-                'file' => $filePath, 
+                'file' => $filePath,
                 'link' => $link,
-                'date' => now(),
+                'date' => Carbon::now($timezone),
                 'due_date' => $request->due_date,
                 'hour' => $request->hour,
             ]);
-
             return response()->json([
                 'status' => true,
                 'message' => 'Task created successfully',
@@ -66,9 +68,9 @@ class TaskController extends Controller
                     'description' => $task->description,
                     'file' => $task->file ? asset('storage/' . $task->file) : null,
                     'link' => $task->link,
-                    'date' => $task->date,
-                    'due_date' => $task->due_date,
-                    'hour' => $task->hour,
+                    'date' => Carbon::parse($task->date)->translatedFormat('d F Y H:i'),
+                    'due_date' => Carbon::parse($task->due_date)->translatedFormat('d F Y'),
+                    'hour' => Carbon::parse($task->hour)->translatedFormat('H:i'),
                 ],
             ], 200);
         } catch (\Exception $e) {
@@ -86,19 +88,24 @@ class TaskController extends Controller
             ->where('subject_id', $subject_id)
             ->get();
 
-        $response = [];
-        foreach ($taskList as $task) {
-            $response[] = [
-                'id' => $task->id,
-                'title' => $task->title,
-                'description' => $task->description,
-                'file' => $task->file ? asset('storage/' . $task->file) : null,
-                'link' => $task->link ?? null,
-                'date' => Carbon::parse($task->date)->translatedFormat('d F Y H:i'),
-                'due_date' => $task->due_date ? Carbon::parse($task->due_date)->translatedFormat('d F Y') : null,
-                'hour' => $task->hour ? Carbon::parse($task->hour)->translatedFormat('H:i') : null,
-            ];
+        if ($taskList->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No tasks found',
+                'data' => [],
+            ], 200);
         }
+
+        $response = [
+            'date' => Carbon::parse($taskList->first()->date)->translatedFormat('d F Y'),
+            'tasks' => $taskList->map(function ($task) {
+                return [
+                    'id' => $task->id,
+                    'title' => $task->title,
+                    'time' => Carbon::parse($task->date)->translatedFormat('H:i'),
+                ];
+            }),
+        ];
 
         return response()->json([
             'status' => true,
@@ -146,7 +153,7 @@ class TaskController extends Controller
             }
             $path = $request->file('file')->store('file', 'public');
             $task->file = $path;
-            $task->link = null; 
+            $task->link = null;
         } elseif ($request->filled('link')) {
             if ($task->file && Storage::disk('public')->exists($task->file)) {
                 Storage::disk('public')->delete($task->file);
@@ -204,18 +211,16 @@ class TaskController extends Controller
         ], 200);
     }
 
-    public function getTaskById($class_id, $subject_id, $id)
+    public function getTaskById($id)
     {
-        $task = AddTask::where('class_id', $class_id)
-            ->where('subject_id', $subject_id)
-            ->where('id', $id)
+        $task = AddTask:: where('id', $id)
             ->first();
 
         if (!$task) {
             return response()->json([
                 'status' => false,
                 'message' => 'Task not found',
-            ], 404);
+            ], 200);
         }
 
         $response = [
@@ -235,4 +240,36 @@ class TaskController extends Controller
             'data' => $response,
         ], 200);
     }
+
+    public function getTaskByDate($class_id)
+    {
+        $tasks = AddTask::where('class_id', $class_id)->get();
+
+        if ($tasks->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No tasks found',
+                'data' => [],
+            ], 200);
+        }
+
+        $response = [
+            'date' => Carbon::parse($tasks->first()->date)->translatedFormat('d F Y'),
+            'tasks' => $tasks->map(function ($task) {
+                return [
+                    'id' => $task->id,
+                    'title' => $task->title,
+                    'time' => Carbon::parse($task->date)->translatedFormat('H:i'),
+                ];
+            }),
+        ];
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successfully fetched tasks',
+            'data' => $response,
+        ], 200);
+    }
+
+
 }

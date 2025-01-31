@@ -11,6 +11,7 @@ class AddMaterials extends Model
         'subject_id',
         'title',
         'description',
+        'date',
         'file',
         'link'
     ];

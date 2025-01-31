@@ -4,6 +4,7 @@ namespace App\Http\Controllers\TeacherCtrl\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Teacher\Dashboard\AddMaterials;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -42,11 +43,14 @@ class MaterialsController extends Controller
                 $link = $request->link;
             }
 
+            $timezone = $request->timezone ?? 'Asia/Jakarta';
+
             $material = AddMaterials::create([
                 'class_id' => $request->class_id,
                 'subject_id' => $request->subject_id,
                 'title' => $request->title,
                 'description' => $request->description,
+                'date' => Carbon::now($timezone),
                 'file' => $filePath,
                 'link' => $link,
             ]);
@@ -60,6 +64,7 @@ class MaterialsController extends Controller
                     'subject_id' => $material->subject_id,
                     'title' => $material->title,
                     'description' => $material->description,
+                    'date' => Carbon::parse($material->date)->translatedFormat('d F Y H:i'),
                     'file' => $material->file ? asset('storage/' . $material->file) : null,
                     'link' => $material->link,
                 ],
@@ -78,24 +83,37 @@ class MaterialsController extends Controller
         $materialList = AddMaterials::where('class_id', $class_id)
             ->where('subject_id', $subject_id)
             ->get();
-
-        $response = [];
-        foreach ($materialList as $material) {
-            $response[] = [
-                'id' => $material->id,
-                'title' => $material->title,
-                'description' => $material->description,
-                'file' => $material->file ? asset('storage/' . $material->file) : null,
-                'link' => $material->link ?? null,
-            ];
+    
+        if ($materialList->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No materials found',
+                'data' => [],
+            ], 200);
         }
-
+    
+        $firstMaterial = $materialList->first();
+        $date = $firstMaterial ? Carbon::parse($firstMaterial->date)->translatedFormat('d F Y') : null;
+    
+        $response = [
+            'date' => $date,
+            'materials' => $materialList->map(function ($material) {
+                return [
+                    'id' => $material->id,
+                    'title' => $material->title,
+                    'time' => Carbon::parse($material->date)->translatedFormat('H:i'),
+                    'class_id' => $material->class_id,
+                ];
+            }),
+        ];
+    
         return response()->json([
             'status' => true,
             'message' => 'Successfully',
             'data' => $response,
         ], 200);
     }
+    
 
     public function editMaterials(Request $request, $id)
     {
@@ -123,7 +141,7 @@ class MaterialsController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Material not found',
-            ], 422);
+            ], 200);
         }
 
         if ($request->has('title') && $request->title !== null) {
@@ -164,18 +182,16 @@ class MaterialsController extends Controller
         ], 200);
     }
 
-    public function getMaterialById($class_id, $subject_id, $id)
+    public function getMaterialById($id)
     {
-        $material = AddMaterials::where('class_id', $class_id)
-            ->where('subject_id', $subject_id)
-            ->where('id', $id)
+        $material = AddMaterials::where('id', $id)
             ->first();
 
         if (!$material) {
             return response()->json([
                 'status' => false,
                 'message' => 'Material not found',
-            ], 404);
+            ], 200);
         }
 
         return response()->json([
@@ -187,10 +203,10 @@ class MaterialsController extends Controller
                 'subject_id' => $material->subject_id,
                 'title' => $material->title,
                 'description' => $material->description,
-                'file' => $material->file ? asset('storage/' . $material->file) : null,
-                'link' => $material->link ?? null,            ]
+                'date' => Carbon::parse($material->first()->date)->translatedFormat('d F Y H:i'),
+                'file' => $material->file ? asset(path: 'storage/' . $material->file) : null,
+                'link' => $material->link ?? null,
+            ]
         ], 200);
     }
-
-
 }

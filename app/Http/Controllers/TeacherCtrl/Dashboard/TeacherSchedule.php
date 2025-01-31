@@ -26,6 +26,7 @@ class TeacherSchedule extends Controller
         $response = $classList->map(function ($schedule) {
             return [
                 'id' => $schedule->id,
+                'class_id' => $class->class->id?? null,
                 'class_name' => $schedule->class->class_name ?? null,
                 'subject_name' => $schedule->subject->subject_name ?? null,
             ];
@@ -49,6 +50,7 @@ class TeacherSchedule extends Controller
         $response = $classList->map(function ($class) {
             return [
                 'id' => $class->id,
+                'class_id' => $class->class->id?? null,
                 'class_name' => $class->class->class_name ?? null,
                 'subject_name' => $class->subject_name,
             ];

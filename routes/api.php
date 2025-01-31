@@ -156,17 +156,17 @@ Route::group([
             Route::post('create-task', [TaskController::class, 'addTask']);
             Route::get('task-list/{class_id}/{subject_id}', [TaskController::class, 'getTask']);
             Route::put('edit-task/{id}', [TaskController::class, 'editTask']);
-            Route::get('get-task/{class_id}/{subject_id}/{id}', [TaskController::class, 'getTaskById']);
+            Route::get('get-task/{id}', [TaskController::class, 'getTaskById']);
             Route::get('get-class-today', [TeacherSchedule::class, 'getTeacherClassToday']);
             Route::get('get-class', [TeacherSchedule::class, 'getTeacherClass']);
             Route::get('get-teacher-schedule-today', [TeacherSchedule::class, 'getTeacherScheduleToday']);
             Route::get('get-teacher-schedule', [TeacherSchedule::class, 'getTeacherSchedule']);
-
+            Route::get('get-task-date/{class_id}', [TaskController::class, 'getTaskByDate']);
 
             Route::post('create-material', [MaterialsController::class, 'addMaterials']);
             Route::get('material-list/{class_id}/{subject_id}', [MaterialsController::class, 'getMaterials']);
             Route::put('edit-material/{id}', [MaterialsController::class, 'editMaterials']);
-            Route::get('get-material/{class_id}/{subject_id}/{id}', [MaterialsController::class, 'getMaterialById']);
+            Route::get('get-material/{id}', [MaterialsController::class, 'getMaterialById']);
 
         });
 
