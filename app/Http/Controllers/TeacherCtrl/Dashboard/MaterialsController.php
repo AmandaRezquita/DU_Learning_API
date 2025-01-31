@@ -82,8 +82,9 @@ class MaterialsController extends Controller
     {
         $materialList = AddMaterials::where('class_id', $class_id)
             ->where('subject_id', $subject_id)
+            ->orderBy('date', 'asc')
             ->get();
-    
+
         if ($materialList->isEmpty()) {
             return response()->json([
                 'status' => false,
@@ -91,29 +92,33 @@ class MaterialsController extends Controller
                 'data' => [],
             ], 200);
         }
-    
-        $firstMaterial = $materialList->first();
-        $date = $firstMaterial ? Carbon::parse($firstMaterial->date)->translatedFormat('d F Y') : null;
-    
-        $response = [
-            'date' => $date,
-            'materials' => $materialList->map(function ($material) {
-                return [
-                    'id' => $material->id,
-                    'title' => $material->title,
-                    'time' => Carbon::parse($material->date)->translatedFormat('H:i'),
-                    'class_id' => $material->class_id,
-                ];
-            }),
-        ];
-    
+
+        $groupedMaterials = $materialList->groupBy(function ($material) {
+            return Carbon::parse($material->date)->translatedFormat('d F Y');
+        });
+
+        $response = $groupedMaterials->map(function ($materials, $date) {
+            return [
+                'date' => $date,
+                'materials' => $materials->map(function ($material) {
+                    return [
+                        'id' => $material->id,
+                        'title' => $material->title,
+                        'time' => Carbon::parse($material->date)->translatedFormat('H:i'),
+                        'class_id' => $material->class_id,
+                    ];
+                })->values(),
+            ];
+        })->values();
+
         return response()->json([
             'status' => true,
-            'message' => 'Successfully',
+            'message' => 'Successfully fetched materials',
             'data' => $response,
         ], 200);
     }
-    
+
+
 
     public function editMaterials(Request $request, $id)
     {
@@ -203,7 +208,7 @@ class MaterialsController extends Controller
                 'subject_id' => $material->subject_id,
                 'title' => $material->title,
                 'description' => $material->description,
-                'date' => Carbon::parse($material->first()->date)->translatedFormat('d F Y H:i'),
+                'date' => Carbon::parse($material->date)->translatedFormat('d F Y H:i'),
                 'file' => $material->file ? asset(path: 'storage/' . $material->file) : null,
                 'link' => $material->link ?? null,
             ]

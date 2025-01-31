@@ -86,8 +86,9 @@ class TaskController extends Controller
     {
         $taskList = AddTask::where('class_id', $class_id)
             ->where('subject_id', $subject_id)
+            ->orderBy('date', 'asc')
             ->get();
-
+    
         if ($taskList->isEmpty()) {
             return response()->json([
                 'status' => false,
@@ -95,24 +96,31 @@ class TaskController extends Controller
                 'data' => [],
             ], 200);
         }
-
-        $response = [
-            'date' => Carbon::parse($taskList->first()->date)->translatedFormat('d F Y'),
-            'tasks' => $taskList->map(function ($task) {
-                return [
-                    'id' => $task->id,
-                    'title' => $task->title,
-                    'time' => Carbon::parse($task->date)->translatedFormat('H:i'),
-                ];
-            }),
-        ];
-
+    
+        $groupedTasks = $taskList->groupBy(function ($task) {
+            return Carbon::parse($task->date)->translatedFormat('d F Y');
+        });
+    
+        $response = $groupedTasks->map(function ($tasks, $date) {
+            return [
+                'date' => $date,
+                'tasks' => $tasks->map(function ($task) {
+                    return [
+                        'id' => $task->id,
+                        'title' => $task->title,
+                        'time' => Carbon::parse($task->date)->translatedFormat('H:i'),
+                    ];
+                })->values(),
+            ];
+        })->values();
+    
         return response()->json([
             'status' => true,
             'message' => 'Successfully fetched tasks',
             'data' => $response,
         ], 200);
     }
+    
 
     public function editTask(Request $request, $id)
     {
