@@ -89,4 +89,32 @@ class StudentaddClassController extends Controller
         ], 200);
     }
 
+    public function getStudentBySubject($class_id){
+
+        
+        $students = StudentClass::where('class_id', $class_id)
+        ->with('student')
+        ->get();
+   
+    $response = [];
+    foreach ($students as $s) {
+
+        $image = StudentImage::find($s->student->student_image_id);
+
+        $response[] = [
+            'id' => $s->id,
+            'student_id' => $s->student_id,
+            'name' => $s->student ? $s->student->fullname : Null,
+            'phone_number' => $s->student ? $s->student->phone_number : Null,
+            'nis' => $s->student ? $s->student->student_number : Null,
+            'image' => $image ? $image->image : null,
+        ];
+    }
+        return response()->json([
+            'status' => true,
+            'message' => 'Successfully retrieved subjects and teachers',
+            'data' => $response,
+        ], 200);
+    }
+
 }

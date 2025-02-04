@@ -21,8 +21,8 @@ class MaterialsController extends Controller
                     'subject_id' => 'required|integer',
                     'title' => 'required|string|max:255',
                     'description' => 'required|string|max:255',
-                    'file' => 'sometimes|file|mimes:pdf,doc,docx|max:2048|required_without:link',
-                    'link' => 'sometimes|nullable|url|required_without:file',
+                    'nullable|file|mimes:pdf,doc,docx|max:2048',
+                    'link' => 'nullable|url',
                 ]
             );
 
@@ -38,7 +38,9 @@ class MaterialsController extends Controller
             $link = null;
 
             if ($request->hasFile('file')) {
-                $filePath = $request->file('file')->store('file', 'public');
+                $fileName = $request->file('file')->getClientOriginalName();
+                $fileName = str_replace(' ', '_', $fileName);
+                $filePath = $request->file('file')->storeAs('file', $fileName, 'public');
             } elseif ($request->filled('link')) {
                 $link = $request->link;
             }
@@ -65,8 +67,8 @@ class MaterialsController extends Controller
                     'title' => $material->title,
                     'description' => $material->description,
                     'date' => Carbon::parse($material->date)->translatedFormat('d F Y H:i'),
-                    'file' => $material->file ? asset('storage/' . $material->file) : null,
-                    'link' => $material->link,
+                    'file' => $filePath ? asset('storage/' . $filePath) : null,
+                    'link' => $material->link ?? null,
                 ],
             ], 200);
         } catch (\Exception $e) {
@@ -117,8 +119,6 @@ class MaterialsController extends Controller
             'data' => $response,
         ], 200);
     }
-
-
 
     public function editMaterials(Request $request, $id)
     {

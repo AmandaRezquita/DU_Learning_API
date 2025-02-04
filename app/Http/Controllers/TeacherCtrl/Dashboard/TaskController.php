@@ -13,74 +13,96 @@ use Validator;
 
 class TaskController extends Controller
 {
-    public function addTask(Request $request)
+    public function show($class_id, $subject_id)
     {
-        try {
-            $validate = Validator::make($request->all(), [
-                'class_id' => 'required|integer',
-                'subject_id' => 'required|integer',
-                'title' => 'required|string|max:255',
-                'description' => 'required|string|max:255',
-                'file' => 'sometimes|file|mimes:pdf,doc,docx|max:2048|required_without:link',
-                'link' => 'sometimes|nullable|url|required_without:file',
-                'due_date' => 'nullable|date_format:Y-m-d',
-                'hour' => 'nullable|date_format:H:i',
-            ]);
+        $tasks = AddTask::where('class_id', $class_id)
+                        ->where('subject_id', $subject_id)
+                        ->get();
+        return view('task', compact('tasks', 'class_id', 'subject_id'));
+    }
+     public function addTask(Request $request)
+{
+    try {
+        $validate = Validator::make($request->all(), [
+            'class_id' => 'required|integer',
+            'subject_id' => 'required|integer',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+            'file' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            'link' => 'nullable|url',
+            'due_date' => 'nullable|date_format:Y-m-d',
+            'hour' => 'nullable|date_format:H:i',
+        ]);
 
-            if ($validate->fails()) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Validation errors',
-                    'errors' => $validate->errors(),
-                ], 422);
-            }
-
-            $filePath = null;
-            $link = null;
-
-            if ($request->hasFile('file')) {
-                $filePath = $request->file('file')->store('file', 'public');
-            } elseif ($request->filled('link')) {
-                $link = $request->link;
-            }
-
-            $timezone = $request->timezone ?? 'Asia/Jakarta';
-
-            $task = AddTask::create([
-                'class_id' => $request->class_id,
-                'subject_id' => $request->subject_id,
-                'title' => $request->title,
-                'description' => $request->description,
-                'file' => $filePath,
-                'link' => $link,
-                'date' => Carbon::now($timezone),
-                'due_date' => $request->due_date,
-                'hour' => $request->hour,
-            ]);
-            return response()->json([
-                'status' => true,
-                'message' => 'Task created successfully',
-                'data' => [
-                    'id' => $task->id,
-                    'class_id' => $task->class_id,
-                    'subject_id' => $task->subject_id,
-                    'title' => $task->title,
-                    'description' => $task->description,
-                    'file' => $task->file ? asset('storage/' . $task->file) : null,
-                    'link' => $task->link,
-                    'date' => Carbon::parse($task->date)->translatedFormat('d F Y H:i'),
-                    'due_date' => Carbon::parse($task->due_date)->translatedFormat('d F Y'),
-                    'hour' => Carbon::parse($task->hour)->translatedFormat('H:i'),
-                ],
-            ], 200);
-        } catch (\Exception $e) {
+        if ($validate->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Failed to add task',
-                'error' => $e->getMessage(),
-            ], 500);
+                'message' => 'Validation errors',
+                'errors' => $validate->errors(),
+            ], 422);
         }
+
+        if (!$request->hasFile('file') && !$request->filled('link')) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Either a file or link must be provided',
+            ], 422);
+        }
+
+        $filePath = null;
+        $link = null;
+
+        if ($request->hasFile('file')) {
+            $fileName = $request->file('file')->getClientOriginalName();
+            
+            $fileName = str_replace(' ', '_', $fileName);
+            
+            $filePath = $request->file('file')->storeAs('file', $fileName, 'public');
+            
+            $fileUrl = url('storage/file/' . $fileName);
+        } elseif ($request->filled('link')) {
+            $link = $request->link;
+        }
+        
+        $timezone = $request->timezone ?? 'Asia/Jakarta';
+
+        $task = AddTask::create([
+            'class_id' => $request->class_id,
+            'subject_id' => $request->subject_id,
+            'title' => $request->title,
+            'description' => $request->description,
+            'file' => $filePath,
+            'link' => $link,
+            'date' => Carbon::now($timezone),
+            'due_date' => $request->due_date,
+            'hour' => $request->hour,
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Task created successfully',
+            'data' => [
+                'id' => $task->id,
+                'class_id' => $task->class_id,
+                'subject_id' => $task->subject_id,
+                'title' => $task->title,
+                'description' => $task->description,
+                'file' => $task->file ? asset('storage/' . $task->file) : null,
+                'link' => $task->link,
+                'date' => Carbon::parse($task->date)->translatedFormat('d F Y H:i'),
+                'due_date' => Carbon::parse($task->due_date)->translatedFormat('d F Y'),
+                'hour' => Carbon::parse($task->hour)->translatedFormat('H:i'),
+            ],
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Failed to add task',
+            'error' => $e->getMessage(),
+        ], 500);
     }
+}
+
 
     public function getTask($class_id, $subject_id)
     {
@@ -219,7 +241,7 @@ class TaskController extends Controller
         ], 200);
     }
 
-    public function getTaskById($id)
+    public function getTaskById(Request $request, $id)
     {
         $task = AddTask:: where('id', $id)
             ->first();
