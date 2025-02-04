@@ -37,7 +37,6 @@ class MaterialsController extends Controller
             $filePath = null;
             $link = null;
 
-            // Handle file upload
             if ($request->hasFile('file')) {
                 $fileName = $request->file('file')->getClientOriginalName();
                 $fileName = str_replace(' ', '_', $fileName);
