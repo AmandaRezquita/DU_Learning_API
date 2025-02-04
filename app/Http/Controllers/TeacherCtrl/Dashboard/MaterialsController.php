@@ -34,16 +34,20 @@ class MaterialsController extends Controller
                 ], 422);
             }
 
-            $filePath = null;
-            $link = null;
+        $filePath = null;
+        $link = null;
 
-            if ($request->hasFile('file')) {
-                $fileName = $request->file('file')->getClientOriginalName();
-                $fileName = str_replace(' ', '_', $fileName);
-                $filePath = $request->file('file')->storeAs('file', $fileName, 'public');
-            } elseif ($request->filled('link')) {
-                $link = $request->link;
-            }
+        if ($request->hasFile('file')) {
+            $fileName = $request->file('file')->getClientOriginalName();
+            
+            $fileName = str_replace(' ', '_', $fileName);
+            
+            $filePath = $request->file('file')->storeAs('file', $fileName, 'public');
+            
+            $fileUrl = url('storage/file/' . $fileName);
+        } elseif ($request->filled('link')) {
+            $link = $request->link;
+        }
 
             $timezone = $request->timezone ?? 'Asia/Jakarta';
 
@@ -67,7 +71,7 @@ class MaterialsController extends Controller
                     'title' => $material->title,
                     'description' => $material->description,
                     'date' => Carbon::parse($material->date)->translatedFormat('d F Y H:i'),
-                    'file' => $filePath ? asset('storage/' . $filePath) : null,
+                    'file' => $material->file ? asset('storage/' . $material->file) : null,
                     'link' => $material->link ?? null,
                 ],
             ], 200);
