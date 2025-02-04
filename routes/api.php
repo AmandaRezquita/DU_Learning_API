@@ -110,6 +110,7 @@ Route::group([
         Route::get('school-profile', [SchoolController::class, 'profile']);
     });
 
+
     Route::get("logout", [LogoutController::class, "logout"]);
 
     Route::prefix('student/')->group(function () {
@@ -137,11 +138,18 @@ Route::group([
 
     Route::prefix('subject/')->group(function () {
         Route::get('get-banner/{id}', [ClassSubjectController::class, 'getSubjectById']);
+        Route::get('get-student/{class_id}', [StudentaddClassController::class, 'getStudentBySubject']);
+
     });
 
     Route::prefix('teacher/')->group(function () {
         Route::get('list', [TeacherController::class, 'TeacherList']);
         Route::get("profile", [TeacherController::class, "profile"]);
+
+        Route::prefix('delete/')->group(function () {
+            Route::delete('material/{id}', [DeleteController::class, 'deleteMaterial']);
+            Route::delete('task/{id}', [DeleteController::class, 'deleteTask']);
+        });
 
         Route::prefix('edit/')->group(function () {
             Route::put('email', [TeacherController::class, 'edit_email']);
