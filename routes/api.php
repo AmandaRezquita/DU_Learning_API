@@ -129,6 +129,8 @@ Route::group([
             Route::get('get-task/{student_id}/{class_id}/{subject_id}', [StudentTaskController::class, 'StudentGetTask']);
             Route::post('add-task', [StudentTaskController::class, 'StudentAddTask']);
             Route::put('edit-student-task/{id}', [StudentTaskController::class, 'StudentEditTask']);
+            Route::get('get-task-list/{class_id}/{subject_id}', [StudentTaskController::class, 'StudentGetTaskList']);
+
         });
 
         Route::delete('delete', [StudentController::class, 'deleteAccount']);

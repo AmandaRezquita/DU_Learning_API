@@ -52,6 +52,52 @@ class StudentTaskController extends Controller
         return response()->json(['status' => true, 'data' => $response], 200);
     }
 
+    public function StudentGetListTask($class_id, $subject_id){
+        $taskList = AddTask::where('class_id', $class_id)
+        ->where('subject_id', $subject_id)
+        ->orderBy('date', 'desc')
+        ->get();
+
+    if ($taskList->isEmpty()) {
+        return response()->json([
+            'status'  => false,
+            'message' => 'No tasks found',
+            'data'    => [],
+        ], 200);
+    }
+
+    $groupedTasks = $taskList->groupBy(function ($task) {
+        return Carbon::parse($task->date)->translatedFormat('d F Y');
+    });
+
+    $groupedTasks = $groupedTasks->sortByDesc(function ($tasks, $date) {
+        return Carbon::createFromFormat('d F Y', $date);
+    });
+
+    $response = $groupedTasks->map(function ($tasks, $date) {
+        $sortedTasks = $tasks->sortByDesc(function ($task) {
+            return Carbon::parse($task->date);
+        });
+
+        return [
+            'date'  => $date,
+            'tasks' => $sortedTasks->map(function ($task) {
+                return [
+                    'id'    => $task->id,
+                    'title' => $task->title,
+                    'time'  => Carbon::parse($task->date)->translatedFormat('H:i'),
+                ];
+            })->values(),
+        ];
+    })->values();
+
+    return response()->json([
+        'status'  => true,
+        'message' => 'Successfully fetched tasks',
+        'data'    => $response,
+    ], 200);
+    }
+
     public function StudentAddTask(Request $request)
     {
         try {
