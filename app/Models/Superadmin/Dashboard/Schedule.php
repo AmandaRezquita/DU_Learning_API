@@ -38,5 +38,11 @@ class Schedule extends Model
         return $this->belongsTo(ClassSubject::class, 'subject_id');
     }
 
+    public function studentClass()
+    {
+        return $this->belongsTo(StudentClass::class, 'class_id');
+    }
+
+
     public $timestamps = false;
 }

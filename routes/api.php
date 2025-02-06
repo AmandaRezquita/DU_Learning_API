@@ -8,6 +8,7 @@ use App\Http\Controllers\PrincipalCtrl\Auth\PrincipalController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StudentCtrl\Auth\StudentController;
 use App\Http\Controllers\StudentCtrl\Dashboard\SearchStudentController;
+use App\Http\Controllers\StudentCtrl\Dashboard\StudentScheduleController;
 use App\Http\Controllers\StudentCtrl\Dashboard\StudentTaskController;
 use App\Http\Controllers\SuperadminCtrl\Auth\SchoolController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassController;
@@ -130,6 +131,8 @@ Route::group([
             Route::post('add-task', [StudentTaskController::class, 'StudentAddTask']);
             Route::put('edit-student-task/{id}', [StudentTaskController::class, 'StudentEditTask']);
             Route::get('get-task-list/{class_id}/{subject_id}', [StudentTaskController::class, 'StudentGetTaskList']);
+            Route::get('get-student-schedule-today', [StudentScheduleController::class, 'getStudentClassToday']);
+            Route::get('get-student-schedule', [StudentScheduleController::class, 'getStudentSchedule']);
 
         });
 
