@@ -34,20 +34,20 @@ class MaterialsController extends Controller
                 ], 422);
             }
 
-        $filePath = null;
-        $link = null;
+            $filePath = null;
+            $link = null;
 
-        if ($request->hasFile('file')) {
-            $fileName = $request->file('file')->getClientOriginalName();
-            
-            $fileName = str_replace(' ', '_', $fileName);
-            
-            $filePath = $request->file('file')->storeAs('file', $fileName, 'public');
-            
-            $fileUrl = url('storage/file/' . $fileName);
-        } elseif ($request->filled('link')) {
-            $link = $request->link;
-        }
+            if ($request->hasFile('file')) {
+                $fileName = $request->file('file')->getClientOriginalName();
+
+                $fileName = str_replace(' ', '_', $fileName);
+
+                $filePath = $request->file('file')->storeAs('file', $fileName, 'public');
+
+                $fileUrl = url('storage/file/' . $fileName);
+            } elseif ($request->filled('link')) {
+                $link = $request->link;
+            }
 
             $timezone = $request->timezone ?? 'Asia/Jakarta';
 
@@ -88,7 +88,7 @@ class MaterialsController extends Controller
     {
         $materialList = AddMaterials::where('class_id', $class_id)
             ->where('subject_id', $subject_id)
-            ->orderBy('date', 'asc')
+            ->orderBy('date', 'desc')
             ->get();
 
         if ($materialList->isEmpty()) {
@@ -103,10 +103,18 @@ class MaterialsController extends Controller
             return Carbon::parse($material->date)->translatedFormat('d F Y');
         });
 
+        $groupedMaterials = $groupedMaterials->sortByDesc(function ($materials, $date) {
+            return Carbon::createFromFormat('d F Y', $date);
+        });
+
         $response = $groupedMaterials->map(function ($materials, $date) {
+            $sortedMaterials = $materials->sortByDesc(function ($material) {
+                return Carbon::parse($material->date);
+            });
+
             return [
                 'date' => $date,
-                'materials' => $materials->map(function ($material) {
+                'materials' => $sortedMaterials->map(function ($material) {
                     return [
                         'id' => $material->id,
                         'title' => $material->title,
@@ -122,19 +130,17 @@ class MaterialsController extends Controller
             'message' => 'Successfully fetched materials',
             'data' => $response,
         ], 200);
+
     }
 
     public function editMaterials(Request $request, $id)
     {
-        $validate = Validator::make(
-            $request->all(),
-            [
-                'title' => 'nullable|string|max:255',
-                'description' => 'nullable|string|max:255',
-                'file' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
-                'link' => 'nullable|url',
-            ]
-        );
+        $validate = Validator::make($request->all(), [
+            'title' => 'nullable|string|max:255',
+            'description' => 'nullable|string|max:255',
+            'file' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            'link' => 'nullable|url',
+        ]);
 
         if ($validate->fails()) {
             return response()->json([
@@ -153,27 +159,33 @@ class MaterialsController extends Controller
             ], 200);
         }
 
-        if ($request->has('title') && $request->title !== null) {
+        if ($request->filled('title')) {
             $material->title = $request->title;
         }
 
-        if ($request->has('description') && $request->description !== null) {
+        if ($request->filled('description')) {
             $material->description = $request->description;
         }
+
+        $filePath = $material->file; 
 
         if ($request->hasFile('file')) {
             if ($material->file && Storage::disk('public')->exists($material->file)) {
                 Storage::disk('public')->delete($material->file);
             }
-            $path = $request->file('file')->store('file', 'public');
-            $material->file = $path;
-            $material->link = null;
+
+            $fileName = str_replace(' ', '_', $request->file('file')->getClientOriginalName());
+            $filePath = $request->file('file')->storeAs('file', $fileName, 'public');
+
+            $material->file = $filePath;
+            $material->link = null; 
         } elseif ($request->filled('link')) {
             if ($material->file && Storage::disk('public')->exists($material->file)) {
                 Storage::disk('public')->delete($material->file);
             }
-            $material->link = $request->link;
+
             $material->file = null;
+            $material->link = $request->link;
         }
 
         $material->save();
@@ -186,21 +198,20 @@ class MaterialsController extends Controller
                 'title' => $material->title,
                 'description' => $material->description,
                 'file' => $material->file ? asset('storage/' . $material->file) : null,
-                'link' => $material->link ?? null,
+                'link' => $material->link,
             ]
         ], 200);
     }
 
     public function getMaterialById($id)
     {
-        $material = AddMaterials::where('id', $id)
-            ->first();
+        $material = AddMaterials::find($id);
 
         if (!$material) {
             return response()->json([
                 'status' => false,
                 'message' => 'Material not found',
-            ], 200);
+            ], 404);
         }
 
         return response()->json([
@@ -212,9 +223,9 @@ class MaterialsController extends Controller
                 'subject_id' => $material->subject_id,
                 'title' => $material->title,
                 'description' => $material->description,
-                'date' => Carbon::parse($material->date)->translatedFormat('d F Y H:i'),
-                'file' => $material->file ? asset(path: 'storage/' . $material->file) : null,
-                'link' => $material->link ?? null,
+                'date' => $material->date ? Carbon::parse($material->date)->translatedFormat('d F Y H:i') : null,
+                'file' => $material->file ? asset('storage/' . $material->file) : null,
+                'link' => $material->link,
             ]
         ], 200);
     }
