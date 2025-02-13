@@ -128,7 +128,6 @@ Route::group([
 
         Route::prefix('dashboard/')->group(function () {
             Route::get('greeting', [TimeGreetingController::class, 'greet']);
-            Route::get('get-task/{student_id}/{class_id}/{subject_id}', [StudentTaskController::class, 'StudentGetTask']);
             Route::post('add-task', [StudentTaskController::class, 'StudentAddTask']);
             Route::put('edit-student-task/{id}', [StudentTaskController::class, 'StudentEditTask']);
             Route::get('get-task-list/{class_id}/{subject_id}', [StudentTaskController::class, 'StudentGetTaskList']);
@@ -137,6 +136,8 @@ Route::group([
             Route::get('get-student-subject-today', [StudentMaterialController::class, 'getStudentSubjectToday']);
             Route::get('get-student-subject', [StudentMaterialController::class, 'getStudentSubject']);
             Route::get('get-material-list/{subject_id}', [StudentMaterialController::class, 'getMaterialList']);
+            Route::get('get-task-filter/{subject_id}/{status}', [StudentTaskController::class, 'StudentGetTaskByStatus']);
+            Route::get('get-task-id/{task_id}', [StudentTaskController::class, 'StudentGetTaskById']);
 
         });
 

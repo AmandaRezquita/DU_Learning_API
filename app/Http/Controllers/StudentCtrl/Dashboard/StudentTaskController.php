@@ -4,6 +4,7 @@ namespace App\Http\Controllers\StudentCtrl\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Student\Dashboard\StudentTask;
+use App\Models\Superadmin\Dashboard\StudentClass;
 use App\Models\Teacher\Dashboard\AddTask;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -43,7 +44,7 @@ class StudentTaskController extends Controller
                 'due_date' => Carbon::parse($task->due_date)->translatedFormat('d F Y'),
                 'hour' => Carbon::parse($task->hour)->translatedFormat('H:i'),
                 'file' => $task->file ? asset('storage/' . $task->file) : null,
-                'link' => $task->link ?? null, 
+                'link' => $task->link ?? null,
                 'status' => $status,
                 'score' => $studentTask ? $studentTask->score : 0,
             ];
@@ -52,50 +53,51 @@ class StudentTaskController extends Controller
         return response()->json(['status' => true, 'data' => $response], 200);
     }
 
-    public function StudentGetListTask($class_id, $subject_id){
+    public function StudentGetListTask($class_id, $subject_id)
+    {
         $taskList = AddTask::where('class_id', $class_id)
-        ->where('subject_id', $subject_id)
-        ->orderBy('date', 'desc')
-        ->get();
+            ->where('subject_id', $subject_id)
+            ->orderBy('date', 'desc')
+            ->get();
 
-    if ($taskList->isEmpty()) {
-        return response()->json([
-            'status'  => false,
-            'message' => 'No tasks found',
-            'data'    => [],
-        ], 200);
-    }
+        if ($taskList->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No tasks found',
+                'data' => [],
+            ], 200);
+        }
 
-    $groupedTasks = $taskList->groupBy(function ($task) {
-        return Carbon::parse($task->date)->translatedFormat('d F Y');
-    });
-
-    $groupedTasks = $groupedTasks->sortByDesc(function ($tasks, $date) {
-        return Carbon::createFromFormat('d F Y', $date);
-    });
-
-    $response = $groupedTasks->map(function ($tasks, $date) {
-        $sortedTasks = $tasks->sortByDesc(function ($task) {
-            return Carbon::parse($task->date);
+        $groupedTasks = $taskList->groupBy(function ($task) {
+            return Carbon::parse($task->date)->translatedFormat('d F Y');
         });
 
-        return [
-            'date'  => $date,
-            'tasks' => $sortedTasks->map(function ($task) {
-                return [
-                    'id'    => $task->id,
-                    'title' => $task->title,
-                    'time'  => Carbon::parse($task->date)->translatedFormat('H:i'),
-                ];
-            })->values(),
-        ];
-    })->values();
+        $groupedTasks = $groupedTasks->sortByDesc(function ($tasks, $date) {
+            return Carbon::createFromFormat('d F Y', $date);
+        });
 
-    return response()->json([
-        'status'  => true,
-        'message' => 'Successfully fetched tasks',
-        'data'    => $response,
-    ], 200);
+        $response = $groupedTasks->map(function ($tasks, $date) {
+            $sortedTasks = $tasks->sortByDesc(function ($task) {
+                return Carbon::parse($task->date);
+            });
+
+            return [
+                'date' => $date,
+                'tasks' => $sortedTasks->map(function ($task) {
+                    return [
+                        'id' => $task->id,
+                        'title' => $task->title,
+                        'time' => Carbon::parse($task->date)->translatedFormat('H:i'),
+                    ];
+                })->values(),
+            ];
+        })->values();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successfully fetched tasks',
+            'data' => $response,
+        ], 200);
     }
 
     public function StudentAddTask(Request $request)
@@ -118,7 +120,7 @@ class StudentTaskController extends Controller
                 'student_id' => $request->student_id,
                 'file' => $filePath,
                 'status' => 'Dikumpulkan',
-                'submitted_at' => Carbon::now(), 
+                'submitted_at' => Carbon::now(),
             ]);
 
             return response()->json([
@@ -142,7 +144,8 @@ class StudentTaskController extends Controller
         }
     }
 
-    public function StudentEditTask(Request $request, $id){
+    public function StudentEditTask(Request $request, $id)
+    {
         $validate = Validator::make(
             $request->all(),
             [
@@ -150,7 +153,7 @@ class StudentTaskController extends Controller
             ]
         );
 
-        
+
         if ($validate->fails()) {
             return response()->json([
                 'status' => false,
@@ -188,5 +191,122 @@ class StudentTaskController extends Controller
         ], 200);
 
     }
+
+    public function StudentGetTaskByStatus($subject_id = 'all', $status = 'all')
+    {
+        $student_id = auth()->id();
+
+        $tasksQuery = AddTask::with([
+            'studentTasks' => function ($query) use ($student_id) {
+                $query->where('student_id', $student_id);
+            }
+        ]);
+
+        if ($subject_id !== 'all') {
+            $tasksQuery->where('subject_id', $subject_id);
+        }
+
+        $tasks = $tasksQuery->get();
+
+        $filteredTasks = $tasks->filter(function ($task) use ($status) {
+            $studentTask = $task->studentTasks->first();
+            $currentDateTime = Carbon::now();
+
+            $dueDateTime = null;
+            if ($task->due_date && $task->hour) {
+                $dueDateTime = Carbon::parse($task->due_date)->setTimeFromTimeString($task->hour);
+            }
+
+            if ($dueDateTime && $currentDateTime->gt($dueDateTime)) {
+                $taskStatus = 'Kadaluarsa';
+            } else {
+                $taskStatus = $studentTask ? $studentTask->status : 'Belum Dikumpulkan';
+            }
+
+            return $status === 'all' ||
+                ($status === 'belum_dikumpulkan' && $taskStatus === 'Belum Dikumpulkan') ||
+                ($status === 'dikumpulkan' && $taskStatus === 'Dikumpulkan') ||
+                ($status === 'selesai' && $taskStatus === 'Selesai') ||
+                ($status === 'kadaluarsa' && $taskStatus === 'Kadaluarsa');
+        });
+
+        $response = $filteredTasks->map(function ($task) {
+            $studentTask = $task->studentTasks->first();
+            $currentDateTime = Carbon::now();
+
+            $dueDateTime = null;
+            if ($task->due_date && $task->hour) {
+                $dueDateTime = Carbon::parse($task->due_date)->setTimeFromTimeString($task->hour);
+            }
+
+            if ($dueDateTime && $currentDateTime->gt($dueDateTime)) {
+                $taskStatus = 'Kadaluarsa';
+            } else {
+                $taskStatus = $studentTask ? $studentTask->status : 'Belum Dikumpulkan';
+            }
+
+            return [
+                'task_id' => $task->id,
+                'title' => $task->title,
+                'description' => $task->description,
+                'date' => Carbon::parse($task->date)->translatedFormat('d F Y'),
+                'due_date' => $task->due_date ? Carbon::parse($task->due_date)->translatedFormat('d F Y') : null,
+                'hour' => $task->hour ? Carbon::parse($task->hour)->translatedFormat('H:i') : null,
+                'file' => $task->file ? asset('storage/' . $task->file) : null,
+                'link' => $task->link ?? null,
+                'status' => $taskStatus,
+                'score' => $studentTask ? $studentTask->score : 0,
+            ];
+        })->values();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Successfully fetched tasks',
+            'data' => $response,
+        ], 200);
+    }
+
+    public function StudentGetTaskById($task_id)
+    {
+        $student_id = auth()->id();
+    
+        $task = AddTask::with([
+            'studentTasks' => function ($query) use ($student_id) {
+                $query->where('student_id', $student_id);
+            }
+        ])->find($task_id);
+    
+        if (!$task) {
+            return response()->json(['status' => false, 'message' => 'Task not found'], 404);
+        }
+    
+        $studentTask = $task->studentTasks->first();
+        $currentDateTime = Carbon::now();
+        $dueDateTime = Carbon::parse($task->due_date)->setTimeFromTimeString($task->hour);
+    
+        $status = 'Belum Dikerjakan';
+        if ($studentTask) {
+            $status = $studentTask->status;
+        } elseif ($currentDateTime->gt($dueDateTime)) {
+            $status = 'Kadaluarsa';
+        }
+    
+            $response = [
+            'id' => $task->id,
+            'title' => $task->title,
+            'description' => $task->description,
+            'date' => Carbon::parse($task->date)->translatedFormat('d F Y'),
+            'due_date' => Carbon::parse($task->due_date)->translatedFormat('d F Y'),
+            'hour' => Carbon::createFromFormat('H:i:s', $task->hour)->format('H:i'),
+            'file' => $task->file ? asset('storage/' . $task->file) : null,
+            'link' => $task->link ?? null,
+            'status' => $status,
+            'score' => $studentTask ? $studentTask->score : 0,
+        ];
+    
+        return response()->json(['status' => true, 'data' => $response], 200);
+    }
+    
+
 
 }

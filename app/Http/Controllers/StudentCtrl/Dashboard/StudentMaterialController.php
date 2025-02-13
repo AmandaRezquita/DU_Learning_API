@@ -4,6 +4,7 @@ namespace App\Http\Controllers\StudentCtrl\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Superadmin\Dashboard\ClassSubject;
+use App\Models\Superadmin\Dashboard\StudentClass;
 use App\Models\Teacher\Auth\Teacher;
 use App\Models\Teacher\Dashboard\AddMaterials;
 use Carbon\Carbon;
@@ -13,66 +14,80 @@ use App\Models\Superadmin\Dashboard\Schedule;
 class StudentMaterialController extends Controller
 {
     public function getStudentSubjectToday()
-    {
-        $student_id = auth()->id();
-        $todayDayId = Carbon::now()->dayOfWeekIso;
+{
+    $student_id = auth()->id();
+    $todayDayId = Carbon::now()->dayOfWeekIso;
 
-        $subjectList = Schedule::whereHas('studentClass', function ($query) use ($student_id) {
-            $query->where('class_id', $student_id);
-        })
-            ->where('day_id', $todayDayId)
-            ->with(['subject', 'class'])
-            ->get();
+    $studentClasses = StudentClass::where('student_id', $student_id)->pluck('class_id');
 
-        $response = $subjectList->map(function ($schedule) {
+    $subjectList = Schedule::whereIn('class_id', $studentClasses)
+        ->where('day_id', $todayDayId)
+        ->with(['subject', 'class'])
+        ->get();
 
-            $name = Teacher::find($schedule->subject->teacher_id);
+    $response = $subjectList->map(function ($schedule) {
+        $teacher = $schedule->subject->teacher ?? null;
 
-            return [
-                'id' => $schedule->id,
-                'subject_id' => $schedule->subject->id ?? null,
-                'subject_name' => $schedule->subject->subject_name ?? null,
-                'teacher_name' => $name->fullname ?? null,
+        return [
+            'id' => $schedule->id,
+            'subject_id' => $schedule->subject->id ?? null,
+            'subject_name' => $schedule->subject->subject_name ?? null,
+            'teacher_name' => $teacher?->fullname ?? null,
+        ];
+    });
 
-            ];
-        });
+    return response()->json([
+        'status' => true,
+        'message' => 'Successfully fetched subject for today',
+        'data' => $response,
+    ], 200);
+}
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Successfully fetched subject for today',
-            'data' => $response,
-        ], 200);
-    }
+
 
     public function getStudentSubject()
     {
         $student_id = auth()->id();
 
-        $subjectList = ClassSubject::whereHas('studentClass', function ($query) use ($student_id) {
-            $query->where('class_id', $student_id);
-        })
-            ->with([ 'class'])
+        $studentClasses = StudentClass::where('student_id', $student_id)->pluck('class_id');
+
+        if ($studentClasses->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No classes found for this student.',
+                'data' => [],
+            ], 200);
+        }
+
+        $subjectList = ClassSubject::whereIn('class_id', $studentClasses)
+            ->with(['class', 'teacher'])
             ->get();
 
-        $response = $subjectList->map(function ($schedule) {
+        if ($subjectList->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No subjects found for this student in their enrolled classes.',
+                'data' => [],
+            ], 200);
+        }
 
-            $name = Teacher::find($schedule->teacher_id);
+        $response = $subjectList->map(function ($schedule) {
+            $teacher = $schedule->teacher;
 
             return [
-                'id' => $schedule->id,
                 'subject_id' => $schedule->id ?? null,
                 'subject_name' => $schedule->subject_name ?? null,
-                'teacher_name' => $name->fullname ?? null,
-
+                'teacher_name' => $teacher ? $teacher->fullname : null,
             ];
         });
 
         return response()->json([
             'status' => true,
-            'message' => 'Successfully fetched subject',
+            'message' => 'Successfully fetched subjects for the student',
             'data' => $response,
         ], 200);
     }
+
 
     public function getMaterialList($subject_id)
     {
@@ -112,7 +127,7 @@ class StudentMaterialController extends Controller
                         'material_id' => $material->id,
                         'title' => $material->title,
                         'time' => Carbon::parse($material->date)->translatedFormat('H:i'),
-                        'teacher_name' =>  $teacher->nickname ?? null,
+                        'teacher_name' => $teacher->nickname ?? null,
                     ];
                 })->values(),
             ];
