@@ -30,7 +30,9 @@ class StudentScheduleController extends Controller
                 'id' => $schedule->id,
                 'subject_name' => $schedule->subject->subject_name ?? null,
                 'start_time' => $schedule->start_time ?? null,
+                'end_time' => $schedule->end_time ?? null,
                 'teacher_name' => $teacher?->fullname ?? null,
+
             ];
         });
 

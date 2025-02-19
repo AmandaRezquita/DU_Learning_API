@@ -87,7 +87,7 @@ class TaskController extends Controller
                     'subject_id' => $task->subject_id,
                     'title' => $task->title,
                     'description' => $task->description,
-                    'file' => $task->file ? asset('storage/' . $task->file) : null,
+                    'file' => $task->file ? "https://docs.google.com/gview?url=" . asset('storage/' . $task->file) . "&embedded=true" : null,
                     'link' => $task->link,
                     'date' => Carbon::parse($task->date)->translatedFormat('d F Y H:i'),
                     'due_date' => Carbon::parse($task->due_date)->translatedFormat('d F Y'),
@@ -175,7 +175,7 @@ class TaskController extends Controller
                 'id' => $studentTask->id,
                 'task_id' => $studentTask->task_id,
                 'student_id' => $studentTask->student_id,
-                'file' => asset('storage/' . $studentTask->file),
+                'file' => $studentTask->file ? "https://docs.google.com/gview?url=" . asset('storage/' . $studentTask->file) . "&embedded=true" : null,
                 'status' => $studentTask->status,
                 'score' => $studentTask->score,
                 'submitted_at' => Carbon::parse($studentTask->submitted_at)->translatedFormat('Y-m-d H:i'),
@@ -208,7 +208,7 @@ class TaskController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Task not found',
-            ], 404);
+            ], 200);
         }
 
         $task->title = $request->title ?? $task->title;
@@ -246,7 +246,7 @@ class TaskController extends Controller
                 'id' => $task->id,
                 'title' => $task->title,
                 'description' => $task->description,
-                'file' => $task->file ? asset('storage/' . $task->file) : null,
+                'file' => $task->file ? "https://docs.google.com/gview?url=" . asset('storage/' . $task->file) . "&embedded=true" : null,
                 'link' => $task->link ?? null,
                 'due_date' => $task->due_date,
                 'hour' => $task->hour
@@ -272,7 +272,7 @@ class TaskController extends Controller
                 'id' => $task->id,
                 'title' => $task->title,
                 'description' => $task->description,
-                'file' => $task->file ? asset('storage/' . $task->file) : null,
+                'file' => $task->file ? "https://docs.google.com/gview?url=" . asset('storage/' . $task->file) . "&embedded=true" : null,
                 'link' => $task->link ?? null,
                 'date' => $task->date ? Carbon::parse($task->date)->translatedFormat('Y-m-d H:i') : null,
                 'due_date' => $task->due_date ? Carbon::parse($task->due_date)->translatedFormat('Y-m-d') : null,

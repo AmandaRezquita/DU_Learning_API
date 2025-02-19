@@ -14,6 +14,7 @@ class AddTask extends Model
         'title',
         'description',
         'file',
+        'link',
         'date',
         'due_date',
         'hour'
@@ -21,8 +22,14 @@ class AddTask extends Model
 
     public function studentTasks()
     {
-        return $this->hasMany(StudentTask::class, 'student_id'); 
+        return $this->hasMany(StudentTask::class, 'task_id'); 
     }
+
+    public function studentTasksId()
+    {
+        return $this->hasMany(StudentTask::class, 'task_id'); 
+    }
+    
     public $timestamps = false;
 
 }
