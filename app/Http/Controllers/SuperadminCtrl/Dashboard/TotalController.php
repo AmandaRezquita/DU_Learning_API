@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Principal\Auth\Principal;
 use App\Models\Student\Auth\Student;
 use App\Models\Superadmin\Dashboard\SchoolClass;
+use App\Models\Superadmin\Dashboard\Subject;
 use App\Models\Teacher\Auth\Teacher;
 use Illuminate\Http\Request;
 
@@ -17,11 +18,14 @@ class TotalController extends Controller
             $totalStudent = Student::count();
             $principal = Principal::count();
             $class = SchoolClass::count();
+            $mapel = Subject::count();
 
             $data['guru'] = $totalTeacher;
             $data['murid'] = $totalStudent;
             $data['kelas'] = $class;
+            $data['mapel'] = $mapel;
             $data['kepala_sekolah'] = $principal;
+
 
             return response()->json([
                 'status' => true,
