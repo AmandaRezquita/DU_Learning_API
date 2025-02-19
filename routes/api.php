@@ -8,6 +8,7 @@ use App\Http\Controllers\PrincipalCtrl\Auth\PrincipalController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StudentCtrl\Auth\StudentController;
 use App\Http\Controllers\StudentCtrl\Dashboard\SearchStudentController;
+use App\Http\Controllers\StudentCtrl\Dashboard\StudentMaterialController;
 use App\Http\Controllers\StudentCtrl\Dashboard\StudentScheduleController;
 use App\Http\Controllers\StudentCtrl\Dashboard\StudentTaskController;
 use App\Http\Controllers\SuperadminCtrl\Auth\SchoolController;
@@ -127,12 +128,17 @@ Route::group([
 
         Route::prefix('dashboard/')->group(function () {
             Route::get('greeting', [TimeGreetingController::class, 'greet']);
-            Route::get('get-task/{student_id}/{class_id}/{subject_id}', [StudentTaskController::class, 'StudentGetTask']);
             Route::post('add-task', [StudentTaskController::class, 'StudentAddTask']);
             Route::put('edit-student-task/{id}', [StudentTaskController::class, 'StudentEditTask']);
             Route::get('get-task-list/{class_id}/{subject_id}', [StudentTaskController::class, 'StudentGetTaskList']);
             Route::get('get-student-schedule-today', [StudentScheduleController::class, 'getStudentClassToday']);
             Route::get('get-student-schedule', [StudentScheduleController::class, 'getStudentSchedule']);
+            Route::get('get-student-subject-today', [StudentMaterialController::class, 'getStudentSubjectToday']);
+            Route::get('get-student-subject', [StudentMaterialController::class, 'getStudentSubject']);
+            Route::get('get-material-list/{subject_id}', [StudentMaterialController::class, 'getMaterialList']);
+            Route::get('get-task-filter/{subject_id}/{status}', [StudentTaskController::class, 'StudentGetTaskByStatus']);
+            Route::get('get-task-id/{task_id}', [StudentTaskController::class, 'StudentGetTaskById']);
+            Route::get('get-material/{id}', [StudentMaterialController::class, 'getMaterialById']);
 
         });
 
@@ -180,6 +186,9 @@ Route::group([
             Route::get('material-list/{class_id}/{subject_id}', [MaterialsController::class, 'getMaterials']);
             Route::put('edit-material/{id}', [MaterialsController::class, 'editMaterials']);
             Route::get('get-material/{id}', [MaterialsController::class, 'getMaterialById']);
+
+            Route::get('get-student-list-answer/{task_id}', [StudentTaskController::class, 'getStudentAnswersByTaskId']);
+            Route::get('get-detail-answer/{studentTask_id}', [StudentTaskController::class, 'getStudentAnswerByStudentTaskId']);
 
         });
 

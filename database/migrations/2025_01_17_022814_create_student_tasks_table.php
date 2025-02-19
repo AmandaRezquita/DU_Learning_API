@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('task_id')->constrained('add_tasks')->onDelete('cascade');
             $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
-            $table->string('file');
+            $table->string('file')->nullable();
+            $table->string("link")->nullable();
             $table->enum('status', ['Belum Dikumpulkan', 'Dikumpulkan', 'Selesai', 'Kadaluarsa'])->default('Belum Dikumpulkan');
             $table->integer('score')->nullable();
             $table->string('submitted_at');

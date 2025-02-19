@@ -71,7 +71,7 @@ class MaterialsController extends Controller
                     'title' => $material->title,
                     'description' => $material->description,
                     'date' => Carbon::parse($material->date)->translatedFormat('d F Y H:i'),
-                    'file' => $material->file ? asset('storage/' . $material->file) : null,
+                    'file' => $material->file ? "https://docs.google.com/gview?url=" . asset('storage/' . $material->file) . "&embedded=true" : null,
                     'link' => $material->link ?? null,
                 ],
             ], 200);
@@ -197,7 +197,7 @@ class MaterialsController extends Controller
                 'id' => $material->id,
                 'title' => $material->title,
                 'description' => $material->description,
-                'file' => $material->file ? asset('storage/' . $material->file) : null,
+                'file' => $material->file ? "https://docs.google.com/gview?url=" . asset('storage/' . $material->file) . "&embedded=true" : null,
                 'link' => $material->link,
             ]
         ], 200);
@@ -211,7 +211,7 @@ class MaterialsController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Material not found',
-            ], 404);
+            ], status: 200);
         }
 
         return response()->json([
@@ -224,7 +224,7 @@ class MaterialsController extends Controller
                 'title' => $material->title,
                 'description' => $material->description,
                 'date' => $material->date ? Carbon::parse($material->date)->translatedFormat('d F Y H:i') : null,
-                'file' => $material->file ? asset('storage/' . $material->file) : null,
+                'file' => $material->file ? "https://docs.google.com/gview?url=" . asset('storage/' . $material->file) . "&embedded=true" : null,
                 'link' => $material->link,
             ]
         ], 200);
