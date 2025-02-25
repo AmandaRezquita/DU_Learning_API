@@ -35,7 +35,7 @@ class ClassSubject extends Model
 
     public function subject()
     {
-        return $this->belongsTo(Subject::class, 'id');
+        return $this->belongsTo(Subject::class, 'subject_id');
     }
 
     public $timestamps = false;

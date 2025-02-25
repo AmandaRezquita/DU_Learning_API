@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Superadmin\Dashboard\ClassSubject;
 use App\Models\Superadmin\Dashboard\Schedule;
 use App\Models\Superadmin\Dashboard\Schedule\Day;
+use App\Models\Superadmin\Dashboard\Subject;
 use App\Models\Superadmin\Dashboard\subjectaddTeacher;
 use App\Models\Teacher\Auth\Teacher;
 use Illuminate\Http\Request;
@@ -43,10 +44,14 @@ class ScheduleController extends Controller
         $day = Day::find($schedule->day_id);
         $subjectName = ClassSubject::find($schedule->subject_id);
 
+        $namaSubject = Subject::find($schedule->subject_id);
+
+
+
         $teacherName = $subjectName && $subjectName->teacher ? $subjectName->teacher->fullname : 'Teacher not found';
 
         $subject = [
-            'subject' => $subjectName ? $subjectName->subject_name : 'Subject not found',
+            'subject' => $namaSubject ? $namaSubject->subject_name : 'Subject not found',
             'teacher' => $teacherName,
             'start_time' => $schedule->start_time,
             'end_time' => $schedule->end_time,
@@ -68,58 +73,55 @@ class ScheduleController extends Controller
 
 
     public function getSchedule($class_id)
-{
-    $schedules = Schedule::where('class_id', $class_id)
-        ->with(['day', 'subject.teacher'])
-        ->get();
-
-    $daysOfWeek = [
-        'senin',
-        'selasa',
-        'rabu',
-        'kamis',
-        'jumat',
-        'sabtu',
-        'minggu'
-    ];
-
-    $groupedSchedules = [];
-
-    foreach ($schedules as $schedule) {
-        $dayName = $schedule->day->day ?? '';
-        $groupedSchedules[$dayName][] = [
-            'id' => $schedule->id,
-            'subject' => $schedule->subject->subject_name ?? 'Unknown Subject',
-            'teacher' => $schedule->subject->teacher->fullname ?? 'Teacher not assigned',
-            'start_time' => $schedule->start_time,
-            'end_time' => $schedule->end_time,
-        ];
-    }
-
-    $response = [];
-
-    foreach ($daysOfWeek as $day) {
-        if (isset($groupedSchedules[$day])) {
-            $sortedSubjects = collect($groupedSchedules[$day])->sortBy('start_time')->values()->all();
-
-            $response[] = [
-                'day' => $day,
-                'subjects' => $sortedSubjects,
+    {
+        try {
+            $schedules = Schedule::where('class_id', $class_id)
+                ->with(['day', 'subject.teacher', 'subject.subject'])
+                ->get();
+    
+            $daysOfWeek = [
+                'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'
             ];
-        } else {
-            $response[] = [
-                'day' => $day,
-                'subjects' => [],
-            ];
+    
+            $groupedSchedules = [];
+    
+            foreach ($schedules as $schedule) {
+                $dayName = $schedule->day->day ?? '';
+    
+                $groupedSchedules[$dayName][] = [
+                    'id' => $schedule->id,
+                    'subject' => $schedule->subject->subject->subject_name ?? 'Unknown Subject',
+                    'teacher' => $schedule->subject->teacher->fullname ?? 'Teacher not assigned',
+                    'start_time' => $schedule->start_time,
+                    'end_time' => $schedule->end_time,
+                ];
+            }
+    
+            $response = [];
+    
+            foreach ($daysOfWeek as $day) {
+                $response[] = [
+                    'day' => $day,
+                    'subjects' => isset($groupedSchedules[$day])
+                        ? collect($groupedSchedules[$day])->sortBy('start_time')->values()->all()
+                        : [],
+                ];
+            }
+    
+            return response()->json([
+                'status' => true,
+                'message' => 'Successfully fetched schedule',
+                'data' => $response,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to fetch schedule',
+                'error' => $e->getMessage(),
+            ], 200); 
         }
     }
-
-    return response()->json([
-        'status' => true,
-        'message' => 'Successfully fetched schedule',
-        'data' => $response,
-    ], 200);
-}
+    
 
 
     public function getDays()
@@ -130,7 +132,7 @@ class ScheduleController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Days not found',
-            ], 422);
+            ], 200);
         }
 
         return response()->json([
@@ -161,7 +163,7 @@ class ScheduleController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Schedule not found',
-            ], 422);
+            ], 200);
         }
 
         $oldSubject = $schedule->subject;

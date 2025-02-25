@@ -15,7 +15,7 @@ class SubjectController extends Controller
             $validate = Validator::make(
                 $request->all(),
                 [
-                    'subject_name' => 'required|string|max:255',
+                    'subject_name' => 'required|string|max:255|unique:subjects,subject_name',
                 ]
             );
 
@@ -54,7 +54,7 @@ class SubjectController extends Controller
         $validate = Validator::make(
             $request->all(),
             [
-                'subject_name' => 'nullable|string|max:255',
+                'subject_name' => 'nullable|string|max:255|unique:subjects,subject_name',
             ]
         );
 

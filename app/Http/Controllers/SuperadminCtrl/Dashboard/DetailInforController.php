@@ -24,7 +24,7 @@ class DetailInforController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Student not found',
-            ], 404);
+            ], 200);
         }
 
         $gender = StudentGender::find($studentData->gender_id);
@@ -58,7 +58,7 @@ class DetailInforController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Teacher not found',
-            ], 404);
+            ], 200);
         }
 
         $gender = TeacherGender::find($teacherData->gender_id);
@@ -92,7 +92,7 @@ class DetailInforController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Teacher not found',
-            ], 404);
+            ], 200);
         }
 
         $gender = Principal_Gender::find($principalData->gender_id);

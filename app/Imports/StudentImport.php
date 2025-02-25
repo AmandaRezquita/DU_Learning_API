@@ -21,7 +21,7 @@ class StudentImport implements ToCollection
             $data = [
                 'fullname' => $row[$header->search('fullname')],
                 'nickname' => $row[$header->search('nickname')],
-                'birth_date' => \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row[$header->search('birth_date')])->format('Y-m-d'),
+                'birth_date' => \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row[$header->search('birth_date')])->format('d F Y'),
                 'student_number' => $row[$header->search('student_number')],
                 'gender_id' => $row[$header->search('gender_id')],
                 'phone_number' => $row[$header->search('phone_number')],

@@ -96,7 +96,7 @@ class ClassController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Class not found',
-            ], 422);
+            ], 200);
         }
 
         if ($request->has('class_name') && $request->class_name !== null) {
@@ -203,7 +203,7 @@ class ClassController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Class not found',
-            ], 404);
+            ], 200);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
