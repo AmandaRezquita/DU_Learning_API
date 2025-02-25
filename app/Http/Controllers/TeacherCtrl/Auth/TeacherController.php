@@ -371,7 +371,7 @@ class TeacherController extends Controller
                     'fullname' => $row[array_search('fullname', $header)] ?? null,
                     'nickname' => $row[array_search('nickname', $header)] ?? null,
                     'birth_date' => isset($row[array_search('birth_date', $header)])
-                        ? \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row[array_search('birth_date', $header)])->format('Y-m-d')
+                        ? \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row[array_search('birth_date', $header)])->format('d F Y')
                         : null,
                     'teacher_number' => $row[array_search('teacher_number', $header)] ?? null,
                     'gender_id' => $row[array_search('gender_id', $header)] ?? null,

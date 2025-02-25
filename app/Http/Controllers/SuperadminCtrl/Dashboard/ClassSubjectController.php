@@ -5,6 +5,7 @@ namespace App\Http\Controllers\SuperadminCtrl\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Superadmin\Dashboard\ClassSubject;
 use App\Models\Superadmin\Dashboard\SchoolClass;
+use App\Models\Superadmin\Dashboard\Subject;
 use App\Models\Superadmin\Dashboard\subjectaddTeacher;
 use App\Models\Teacher\Auth\Teacher;
 use Illuminate\Http\Request;
@@ -14,18 +15,25 @@ class ClassSubjectController extends Controller
 {
     public function getSubject($class_id)
     {
-        $subjects = ClassSubject::where('class_id', $class_id)->get();
+        $subjects = ClassSubject::with(['teacher', 'subject']) 
+            ->where('class_id', $class_id)
+            ->get();
 
-        $response = [];
-        foreach ($subjects as $subject) {
-            $subjectTeacher = ClassSubject::where('id', $subject->id)->first();
-            $teacherName = $subjectTeacher && $subjectTeacher->teacher ? $subjectTeacher->teacher->fullname : 'Tidak ada guru';
-            $response[] = [
-                'id' => $subject->id,
-                'subject_name' => $subject->subject_name,
-                'teacher_name' => $teacherName,
-            ];
+        if ($subjects->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No subjects found for this class',
+                'data' => [],
+            ], 200);
         }
+
+        $response = $subjects->map(function ($subject) {
+            return [
+                'id' => $subject->id,
+                'subject_name' => $subject->subject ? $subject->subject->subject_name : 'Tidak ada subject',
+                'teacher_name' => $subject->teacher ? $subject->teacher->fullname : 'Tidak ada guru',
+            ];
+        });
 
         return response()->json([
             'status' => true,
@@ -34,13 +42,13 @@ class ClassSubjectController extends Controller
         ], 200);
     }
 
+
     public function updateSubject(Request $request, $id)
     {
-
         $validate = Validator::make(
             $request->all(),
             [
-                'subject_name' => 'nullable|string|max:255',
+                'subject_id' => 'nullable|integer',
                 'teacher_id' => 'nullable|integer',
             ]
         );
@@ -59,11 +67,11 @@ class ClassSubjectController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Subject not found',
-            ], 422);
+            ], 200);
         }
 
-        if ($request->has('subject_name') && $request->subject_name !== null) {
-            $subject->subject_name = $request->subject_name;
+        if ($request->has('subject_id') && $request->subject_id !== null) {
+            $subject->subject_id = $request->subject_id;
         }
 
         if ($request->has('teacher_id') && $request->teacher_id !== null) {
@@ -80,7 +88,7 @@ class ClassSubjectController extends Controller
             'message' => 'Subject updated successfully',
             'data' => [
                 'id' => $subject->id,
-                'subject_name' => $subject->subject_name,
+                'subject_name' => $subject->subject_id,
                 'teacher_name' => $teacherName,
             ]
         ], 200);
@@ -94,7 +102,7 @@ class ClassSubjectController extends Controller
                 $request->all(),
                 [
                     'class_id' => 'required|integer',
-                    'subject_name' => 'required|string|max:255',
+                    'subject_id' => 'required|integer',
                     'teacher_id' => 'required|integer',
                 ]
             );
@@ -108,7 +116,7 @@ class ClassSubjectController extends Controller
             }
 
             $exists = ClassSubject::where('class_id', $request->class_id)
-                ->where('subject_name', $request->subject_name)
+                ->where('id', $request->subject_id)
                 ->exists();
 
             if ($exists) {
@@ -121,7 +129,7 @@ class ClassSubjectController extends Controller
 
             $data = [
                 'class_id' => $request->class_id,
-                'subject_name' => $request->subject_name,
+                'subject_id' => $request->subject_id,
                 'teacher_id' => $request->teacher_id
             ];
 
@@ -131,7 +139,11 @@ class ClassSubjectController extends Controller
 
             $teacher = Teacher::find($subject->teacher_id);
 
-            $success['subject_name'] = $subject->subject_name;
+            $subjectName = Subject::find($subject->subject_id);
+
+
+
+            $success['subject_name'] = $subjectName ? $subjectName->subject_name : null;
             $success['class_name'] = $class ? $class->class_name : null;
             $success['teacher_name'] = $teacher ? $teacher->fullname : null;
 
@@ -151,26 +163,26 @@ class ClassSubjectController extends Controller
 
     public function getSubjectById($id)
     {
-        $subject = ClassSubject::with('teacher')->find($id);
-    
+        $subject = ClassSubject::with('teacher', 'subject')->find($id);
+
         if (!$subject) {
             return response()->json([
                 'status' => false,
                 'message' => 'Subject not found',
             ], 200);
         }
-    
+
         $response = [
             'id' => $subject->id,
-            'subject_name' => $subject->subject_name,
+            'subject_name' => $subject->subject ? $subject->subject->subject_name : "Tidak ada guru",
             'teacher_name' => $subject->teacher ? $subject->teacher->fullname : 'Tidak ada guru',
         ];
-    
+
         return response()->json([
             'status' => true,
             'message' => 'Successfully retrieved subject',
             'data' => $response,
         ], 200);
     }
-    
+
 }

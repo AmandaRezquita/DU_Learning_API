@@ -10,7 +10,6 @@ class ClassSubject extends Model
     protected $fillable = [
         'class_id',
         'subject_id',
-        'subject_name',
         'teacher_id'
     ];
 
@@ -34,6 +33,10 @@ class ClassSubject extends Model
         return $this->belongsTo(Teacher::class, 'teacher_id');
     }
 
+    public function subject()
+    {
+        return $this->belongsTo(Subject::class, 'subject_id');
+    }
 
     public $timestamps = false;
 

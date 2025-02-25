@@ -10,6 +10,7 @@ use App\Models\Superadmin\Dashboard\ClassSubject;
 use App\Models\Superadmin\Dashboard\Schedule;
 use App\Models\Superadmin\Dashboard\SchoolClass;
 use App\Models\Superadmin\Dashboard\StudentClass;
+use App\Models\Superadmin\Dashboard\Subject;
 use App\Models\Superadmin\Dashboard\subjectaddTeacher;
 use App\Models\Teacher\Auth\Teacher;
 use App\Models\Teacher\Dashboard\AddMaterials;
@@ -28,7 +29,7 @@ class DeleteController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Student not authenticated'
-                ], 422);
+                ], 200);
             }
 
             $student->delete();
@@ -56,7 +57,7 @@ class DeleteController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Teacher not authenticated'
-                ], 422);
+                ], 200);
             }
 
             $teacher->delete();
@@ -84,7 +85,7 @@ class DeleteController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Principal not authenticated'
-                ], 422);
+                ], 200);
             }
 
             $principal->delete();
@@ -112,7 +113,7 @@ class DeleteController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Class not found'
-                ], 422);
+                ], 200);
             }
 
             $class->delete();
@@ -138,7 +139,7 @@ class DeleteController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Teacher not found'
-                ], 422);
+                ], 200);
             }
 
             $class->delete();
@@ -164,7 +165,7 @@ class DeleteController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Student not found'
-                ], 422);
+                ], 200);
             }
 
             $class->delete();
@@ -190,7 +191,7 @@ class DeleteController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Subject not found'
-                ], 422);
+                ], 200);
             }
 
             $class->delete();
@@ -216,7 +217,7 @@ class DeleteController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Schedule not found'
-                ], 422);
+                ], 200);
             }
 
             $schedule->delete();
@@ -242,7 +243,7 @@ class DeleteController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Material not found'
-                ], 422);
+                ], 200);
             }
 
             if ($material->file && Storage::disk('public')->exists($material->file)) {
@@ -272,7 +273,7 @@ class DeleteController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Task not found'
-                ], 422);
+                ], 200);
             }
 
             if ($task->file && Storage::disk('public')->exists($task->file)) {
@@ -302,7 +303,7 @@ class DeleteController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Task not found'
-                ], 422);
+                ], 200);
             }
 
             if ($task->file && Storage::disk('public')->exists($task->file)) {
@@ -314,6 +315,32 @@ class DeleteController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Task deleted successfully',
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function deleteSubject(Request $request, $id)
+    {
+        try {
+            $subject = Subject::find($id);
+
+            if (!$subject) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Task not found'
+                ], 200);
+            }
+
+            $subject->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Subject deleted successfully',
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([

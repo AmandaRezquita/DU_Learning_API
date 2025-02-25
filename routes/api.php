@@ -19,6 +19,7 @@ use App\Http\Controllers\SuperadminCtrl\Dashboard\DetailInforController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\EditController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ScheduleController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\StudentaddClassController;
+use App\Http\Controllers\SuperadminCtrl\Dashboard\SubjectController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\SubjectTeacherController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\TotalController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherController;
@@ -73,8 +74,14 @@ Route::group([
             Route::get('subject-list/{class_id}', [ClassSubjectController::class, 'getSubject']);
             Route::get('teacher-subject-list/{class_id}/{subject_id}', [SubjectTeacherController::class, 'getTeacherSubject']);
             Route::get('student-list/{class_id}', [StudentaddClassController::class, 'getStudent']);
-            Route::put('edit-subject/{id}', [ClassSubjectController::class, 'updateSubject']);
+            Route::put('edit-subject-class/{id}', [ClassSubjectController::class, 'updateSubject']);
             Route::put('edit-class/{id}', [ClassController::class, 'updateClass']);
+
+            Route::post('create-subject-superadmin', [SubjectController::class, 'createSubject']);
+            Route::get('get-subject-list-superadmin', [SubjectController::class, 'getSubject']);
+            Route::put('edit-subject-superadmin/{id}', [SubjectController::class, 'editSubject']);
+            Route::get('get-subject-superadmin/{id}', [SubjectController::class, 'getSubjectById']);
+            Route::delete('delete-subject/{id}', [DeleteController::class, 'deleteSubject']);
 
 
             Route::get('get-days', [ScheduleController::class, 'getDays']);
