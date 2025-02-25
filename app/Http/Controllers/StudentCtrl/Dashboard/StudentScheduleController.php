@@ -20,7 +20,7 @@ class StudentScheduleController extends Controller
 
         $classList = Schedule::whereIn('class_id', $studentClasses)
             ->where('day_id', $todayDayId)
-            ->with(['subject', 'class'])
+            ->with(['subject.subject', 'class'])
             ->get();
 
         $response = $classList->map(function ($schedule) {
@@ -28,7 +28,7 @@ class StudentScheduleController extends Controller
 
             return [
                 'id' => $schedule->id,
-                'subject_name' => $schedule->subject->subject_name ?? null,
+                'subject_name' => $schedule->subject->subject->subject_name ?? null,
                 'start_time' => $schedule->start_time ?? null,
                 'end_time' => $schedule->end_time ?? null,
                 'teacher_name' => $teacher?->fullname ?? null,
@@ -49,7 +49,7 @@ class StudentScheduleController extends Controller
         $studentClasses = StudentClass::where('student_id', $student_id)->pluck('class_id');
 
         $schedules = Schedule::whereIn('class_id', $studentClasses)
-            ->with(['class', 'subject.teacher', 'day'])
+            ->with(['class', 'subject.teacher', 'day', 'subject.subject'])
             ->get();
 
         $daysOfWeek = [
@@ -67,7 +67,7 @@ class StudentScheduleController extends Controller
             $dayName = strtolower($schedule->day->day ?? 'Unknown Day');
             $groupedSchedules[$dayName][] = [
                 'id' => $schedule->id,
-                'subject' => $schedule->subject->subject_name ?? 'Unknown Subject',
+                'subject' => $schedule->subject->subject->subject_name ?? 'Unknown Subject',
                 'teacher_name' => $schedule->subject->teacher->fullname ?? 'Teacher not assigned',
                 'class_name' => $schedule->class->class_name ?? 'Unknown Class',
                 'start_time' => $schedule->start_time,

@@ -20,15 +20,15 @@ class TeacherSchedule extends Controller
             $query->where('teacher_id', $teacher_id);
         })
             ->where('day_id', $todayDayId)
-            ->with(['class', 'subject'])
+            ->with(['class', 'subject.subject'])
             ->get();
 
         $response = $classList->map(function ($schedule) {
             return [
                 'id' => $schedule->id,
-                'class_id' => $class->class->id?? null,
+                'class_id' => $schedule->class->id?? null,
                 'class_name' => $schedule->class->class_name ?? null,
-                'subject_name' => $schedule->subject->subject_name ?? null,
+                'subject_name' => $schedule->subject->subject->subject_name ?? null,
             ];
         });
 
@@ -44,7 +44,7 @@ class TeacherSchedule extends Controller
         $teacher_id = auth()->id();
 
         $classList = ClassSubject::where('teacher_id', $teacher_id)
-            ->with('class')
+            ->with('class', 'subject')
             ->get();
 
         $response = $classList->map(function ($class) {
@@ -52,7 +52,7 @@ class TeacherSchedule extends Controller
                 'id' => $class->id,
                 'class_id' => $class->class->id?? null,
                 'class_name' => $class->class->class_name ?? null,
-                'subject_name' => $class->subject_name,
+                'subject_name' => $class->subject->subject_name,
             ];
         });
 
@@ -72,14 +72,14 @@ class TeacherSchedule extends Controller
             $query->where('teacher_id', $teacher_id);
         })
             ->where('day_id', $todayDayId)
-            ->with(['class', 'subject'])
+            ->with(['class', 'subject.subject'])
             ->get();
 
         $response = $classList->map(function ($schedule) {
             return [
                 'id' => $schedule->id,
                 'class_name' => $schedule->class->class_name ?? null,
-                'subject_name' => $schedule->subject->subject_name ?? null,
+                'subject_name' => $schedule->subject->subject->subject_name ?? null,
                 'start_time' => $schedule->start_time,
                 'end_time' => $schedule->end_time,
             ];
@@ -99,7 +99,7 @@ class TeacherSchedule extends Controller
         $schedules = Schedule::whereHas('subject', function ($query) use ($teacher_id) {
             $query->where('teacher_id', $teacher_id);
         })
-            ->with(['class', 'subject.teacher', 'day'])
+            ->with(['class', 'subject.teacher', 'day', 'subject.subject'])
             ->get();
 
         $daysOfWeek = [
@@ -117,7 +117,7 @@ class TeacherSchedule extends Controller
             $dayName = $schedule->day->day ?? 'Unknown Day';
             $groupedSchedules[$dayName][] = [
                 'id' => $schedule->id,
-                'subject' => $schedule->subject->subject_name ?? 'Unknown Subject',
+                'subject' => $schedule->subject->subject->subject_name ?? 'Unknown Subject',
                 'teacher' => $schedule->subject->teacher->fullname ?? 'Teacher not assigned',
                 'class_name' => $schedule->class->class_name ?? 'Unknown Class',
                 'start_time' => $schedule->start_time,

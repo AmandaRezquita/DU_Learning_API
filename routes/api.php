@@ -83,6 +83,8 @@ Route::group([
             Route::get('get-subject-superadmin/{id}', [SubjectController::class, 'getSubjectById']);
             Route::delete('delete-subject/{id}', [DeleteController::class, 'deleteSubject']);
 
+            Route::get('get-available-student', [StudentaddClassController::class, 'availableStudent']);
+
 
             Route::get('get-days', [ScheduleController::class, 'getDays']);
             Route::put('edit-schedule/{id}', [ScheduleController::class, 'updateSchedule']);

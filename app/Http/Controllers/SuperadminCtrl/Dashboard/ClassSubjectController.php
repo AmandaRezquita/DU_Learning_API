@@ -116,7 +116,7 @@ class ClassSubjectController extends Controller
             }
 
             $exists = ClassSubject::where('class_id', $request->class_id)
-                ->where('id', $request->subject_id)
+                ->where('subject_id', $request->subject_id)
                 ->exists();
 
             if ($exists) {

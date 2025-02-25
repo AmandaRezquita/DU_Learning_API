@@ -22,7 +22,7 @@ class StudentMaterialController extends Controller
 
         $subjectList = Schedule::whereIn('class_id', $studentClasses)
             ->where('day_id', $todayDayId)
-            ->with(['subject', 'class'])
+            ->with(['subject.subject', 'class'])
             ->get();
 
         $response = $subjectList->map(function ($schedule) {
@@ -31,7 +31,7 @@ class StudentMaterialController extends Controller
             return [
                 'id' => $schedule->id,
                 'subject_id' => $schedule->subject->id ?? null,
-                'subject_name' => $schedule->subject->subject_name ?? null,
+                'subject_name' => $schedule->subject->subject->subject_name ?? null,
                 'teacher_name' => $teacher?->fullname ?? null,
             ];
         });
@@ -58,7 +58,7 @@ class StudentMaterialController extends Controller
         }
 
         $subjectList = ClassSubject::whereIn('class_id', $studentClasses)
-            ->with(['class', 'teacher'])
+            ->with(['class', 'teacher', 'subject'])
             ->get();
 
         if ($subjectList->isEmpty()) {
@@ -74,7 +74,7 @@ class StudentMaterialController extends Controller
 
             return [
                 'subject_id' => $schedule->id ?? null,
-                'subject_name' => $schedule->subject_name ?? null,
+                'subject_name' => $schedule->subject->subject_name ?? null,
                 'teacher_name' => $teacher ? $teacher->fullname : null,
             ];
         });

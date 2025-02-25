@@ -56,7 +56,7 @@ class TeacherController extends Controller
                     'fullname' => 'required|string|max:255',
                     'nickname' => 'required|string|max:255',
                     'birth_date' => 'required|string|max:255',
-                    'teacher_number' => 'required|string|max:255',
+                    'teacher_number' => 'required|string|max:255|unique:teachers,teacher_number',
                     'gender_id' => 'required|integer',
                     'phone_number' => 'required|string|max:255',
                     'email' => 'required|email|unique:teachers,email',
