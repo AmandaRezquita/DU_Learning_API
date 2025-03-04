@@ -58,7 +58,7 @@ class StudentController extends Controller
                     'fullname' => 'required|string|max:255',
                     'nickname' => 'required|string|max:255',
                     'birth_date' => 'required|string|max:255',
-                    'student_number' => 'required|string|max:255',
+                    'student_number' => 'required|string|max:255|unique:students,student_number',
                     'gender_id' => 'required|integer',
                     'phone_number' => 'required|string|max:255',
                     'email' => 'required|email|unique:students,email',
@@ -435,4 +435,5 @@ class StudentController extends Controller
             ], 500);
         }
     }
+    
 }

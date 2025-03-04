@@ -7,6 +7,7 @@ use App\Models\Principal\Auth\Principal;
 use App\Models\Student\Auth\Student;
 use App\Models\Superadmin\Dashboard\SchoolClass;
 use App\Models\Superadmin\Dashboard\Subject;
+use App\Models\Superadmin\Dashboard\TimeSchedule;
 use App\Models\Teacher\Auth\Teacher;
 use Illuminate\Http\Request;
 
@@ -19,13 +20,14 @@ class TotalController extends Controller
             $principal = Principal::count();
             $class = SchoolClass::count();
             $mapel = Subject::count();
+            $time = TimeSchedule::count();
 
             $data['guru'] = $totalTeacher;
             $data['murid'] = $totalStudent;
             $data['kelas'] = $class;
             $data['mapel'] = $mapel;
             $data['kepala_sekolah'] = $principal;
-
+            $data['time'] = $time;
 
             return response()->json([
                 'status' => true,
@@ -40,3 +42,4 @@ class TotalController extends Controller
         }
     }
 }
+    

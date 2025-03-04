@@ -4,6 +4,7 @@ namespace App\Http\Controllers\StudentCtrl\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Superadmin\Dashboard\StudentClass;
+use App\Models\Superadmin\Dashboard\TimeSchedule;
 use App\Models\Teacher\Auth\Teacher;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -20,17 +21,21 @@ class StudentScheduleController extends Controller
 
         $classList = Schedule::whereIn('class_id', $studentClasses)
             ->where('day_id', $todayDayId)
-            ->with(['subject', 'class'])
+            ->with(['subject.subject', 'class'])
             ->get();
 
         $response = $classList->map(function ($schedule) {
             $teacher = $schedule->subject->teacher ?? null;
 
+            $start_time = TimeSchedule::find($schedule->start_time);
+            $end_time = TimeSchedule::find($schedule->end_time);
+
+
             return [
                 'id' => $schedule->id,
-                'subject_name' => $schedule->subject->subject_name ?? null,
-                'start_time' => $schedule->start_time ?? null,
-                'end_time' => $schedule->end_time ?? null,
+                'subject_name' => $schedule->subject->subject->subject_name ?? null,
+                'start_time' => $start_time->time  ?? 'null',
+                'end_time' => $end_time->time  ?? 'null',
                 'teacher_name' => $teacher?->fullname ?? null,
 
             ];
@@ -49,7 +54,7 @@ class StudentScheduleController extends Controller
         $studentClasses = StudentClass::where('student_id', $student_id)->pluck('class_id');
 
         $schedules = Schedule::whereIn('class_id', $studentClasses)
-            ->with(['class', 'subject.teacher', 'day'])
+            ->with(['class', 'subject.teacher', 'day', 'subject.subject'])
             ->get();
 
         $daysOfWeek = [
@@ -64,14 +69,18 @@ class StudentScheduleController extends Controller
 
         $groupedSchedules = [];
         foreach ($schedules as $schedule) {
+
+            $start_time = TimeSchedule::find($schedule->start_time);
+            $end_time = TimeSchedule::find($schedule->end_time);
+
             $dayName = strtolower($schedule->day->day ?? 'Unknown Day');
             $groupedSchedules[$dayName][] = [
                 'id' => $schedule->id,
-                'subject' => $schedule->subject->subject_name ?? 'Unknown Subject',
+                'subject' => $schedule->subject->subject->subject_name ?? 'Unknown Subject',
                 'teacher_name' => $schedule->subject->teacher->fullname ?? 'Teacher not assigned',
                 'class_name' => $schedule->class->class_name ?? 'Unknown Class',
-                'start_time' => $schedule->start_time,
-                'end_time' => $schedule->end_time,
+                'start_time' => $start_time->time  ?? 'null',
+                'end_time' => $end_time->time  ?? 'null',
             ];
         }
 

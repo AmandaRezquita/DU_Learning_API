@@ -117,4 +117,30 @@ class StudentaddClassController extends Controller
         ], 200);
     }
 
+    public function availableStudent() {
+        $students = Student::whereNotIn('id', function ($query) {
+            $query->select('student_id')
+                  ->from('student_classes');
+        })->get();
+    
+        $response = [];
+        foreach ($students as $student) {
+            $image = StudentImage::find($student->student_image_id);
+    
+            $response[] = [
+                'id' => $student->id,
+                'student_id' => $student->id,
+                'name' => $student->fullname,
+                'nis' => $student->student_number,
+                'image' => $image ? $image->image : null,
+            ];
+        }
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'Successfully retrieved students not in any class',
+            'data' => $response,
+        ], 200);
+    }
+
 }
