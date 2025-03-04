@@ -21,6 +21,7 @@ use App\Http\Controllers\SuperadminCtrl\Dashboard\ScheduleController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\StudentaddClassController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\SubjectController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\SubjectTeacherController;
+use App\Http\Controllers\SuperadminCtrl\Dashboard\TimeController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\TotalController;
 use App\Http\Controllers\TeacherCtrl\Auth\TeacherController;
 use App\Http\Controllers\TeacherCtrl\Dashboard\MaterialsController;
@@ -84,6 +85,12 @@ Route::group([
             Route::delete('delete-subject/{id}', [DeleteController::class, 'deleteSubject']);
 
             Route::get('get-available-student', [StudentaddClassController::class, 'availableStudent']);
+
+            Route::post('create-schedule-time', [TimeController::class, 'createTime']);
+            Route::get('get-schedule-time', [TimeController::class, 'getTime']);
+            Route::put('edit-schedule-time/{id}', [TimeController::class, 'editTime']);
+            Route::delete('delete-schedule-time/{id}', [DeleteController::class, 'deleteTime']);
+
 
 
             Route::get('get-days', [ScheduleController::class, 'getDays']);

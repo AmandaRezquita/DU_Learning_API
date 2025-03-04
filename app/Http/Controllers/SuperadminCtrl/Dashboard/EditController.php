@@ -21,24 +21,25 @@ class EditController extends Controller
     {
         try {
             $user = Student::find($id);
-
+    
             if (!$user) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'User not authenticated'
-                ], 401);
+                    'message' => 'User not found'
+                ], 404);
             }
-
+    
+            // Validasi input
             $validateUser = Validator::make($request->all(), [
                 'fullname' => 'nullable|string|max:255',
                 'nickname' => 'nullable|string|max:255',
                 'birth_date' => 'nullable|string|max:255',
-                'student_number' => 'nullable|string|max:255|unique:students,student_number',
+                'student_number' => 'nullable|string|max:255|unique:students,student_number,' . $user->id,
                 'gender_id' => 'nullable|integer',
                 'phone_number' => 'nullable|string|max:255',
                 'email' => 'nullable|email|unique:students,email,' . $user->id,
             ]);
-
+    
             if ($validateUser->fails()) {
                 return response()->json([
                     'status' => false,
@@ -46,48 +47,36 @@ class EditController extends Controller
                     'errors' => $validateUser->errors()
                 ], 422);
             }
-
+    
+            // Update data jika ada perubahan
+            $fields = ['fullname', 'nickname', 'birth_date', 'gender_id', 'phone_number', 'student_number', 'email'];
             $isEmailChanged = false;
-            if ($request->has('email') && $request->email !== $user->email && $request->email !== null) {
-                $user->email = $request->email;
-                $isEmailChanged = true;
+    
+            foreach ($fields as $field) {
+                if ($request->has($field) && $request->$field !== null && $request->$field !== $user->$field) {
+                    $user->$field = $request->$field;
+                    if ($field === 'email') {
+                        $isEmailChanged = true;
+                    }
+                }
             }
-
-            if ($request->has('fullname') && $request->fullname !== null) {
-                $user->fullname = $request->fullname;
-            }
-            if ($request->has('nickname') && $request->nickname !== null) {
-                $user->nickname = $request->nickname;
-            }
-            if ($request->has('birth_date') && $request->birht_date !== null) {
-                $user->birth_date = $request->birth_date;
-            }
-            if ($request->has('student_number') && $request->student_number !== null) {
-                $user->student_number = $request->student_number;
-            }
-            if ($request->has('gender_id') && $request->gender_id !== null) {
-                $user->gender_id = $request->gender_id;
-            }
-            if ($request->has('phone_number') && $request->phone_number !== null) {
-                $user->phone_number = $request->phone_number;
-            }
-
+    
             $user->save();
-
+    
+            // Jika email berubah, update username dan password, lalu kirim email
             if ($isEmailChanged) {
                 $firstName = explode(' ', $user->fullname)[0];
                 $lastTwoDigits = substr($user->student_number, -2);
-                $username = $firstName . $lastTwoDigits;
-
+                $username = strtolower($firstName . $lastTwoDigits);
                 $password = Str::random(8);
-
+    
                 $user->username = $username;
                 $user->password = Hash::make($password);
                 $user->save();
-
+    
                 Mail::to($user->email)->send(new sendStudentEmail($username, $password));
             }
-
+    
             return response()->json([
                 'status' => true,
                 'message' => 'Updated successfully',
@@ -109,15 +98,15 @@ class EditController extends Controller
             if (!$user) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'User not authenticated'
-                ], 401);
+                    'message' => 'User not found'
+                ], 404);
             }
     
             $validateUser = Validator::make($request->all(), [
                 'fullname' => 'nullable|string|max:255',
                 'nickname' => 'nullable|string|max:255',
                 'birth_date' => 'nullable|string|max:255',
-                'teacher_number' => 'nullable|string|max:255|unique:teachers,teacher_number',
+                'teacher_number' => 'nullable|string|max:255|unique:teachers,teacher_number,' . $user->id,
                 'gender_id' => 'nullable|integer',
                 'phone_number' => 'nullable|string|max:255',
                 'email' => 'nullable|email|unique:teachers,email,' . $user->id,
@@ -132,22 +121,25 @@ class EditController extends Controller
             }
     
             $isEmailChanged = false;
-            if ($request->has('email') && $request->email !== $user->email  && $request->email !== null ) {
+            if ($request->has('email') && $request->email !== $user->email && $request->email !== null) {
                 $user->email = $request->email;
                 $isEmailChanged = true;
             }
     
-            if ($request->has('fullname') && $request->fullname !== null ) {
+            $isNumChanged = false;
+            if ($request->has('teacher_number') && $request->teacher_number !== $user->teacher_number && $request->teacher_number !== null) {
+                $user->teacher_number = $request->teacher_number;
+                $isNumChanged = true;
+            }
+    
+            if ($request->has('fullname') && $request->fullname !== null) {
                 $user->fullname = $request->fullname;
             }
             if ($request->has('nickname') && $request->nickname !== null) {
                 $user->nickname = $request->nickname;
             }
-            if ($request->has('birth_date') && $request->birht_date !== null) {
+            if ($request->has('birth_date') && $request->birth_date !== null) { // Fixed typo
                 $user->birth_date = $request->birth_date;
-            }
-            if ($request->has('teacher_number') && $request->teacher_number !== null) {
-                $user->teacher_number = $request->teacher_number;
             }
             if ($request->has('gender_id') && $request->gender_id !== null) {
                 $user->gender_id = $request->gender_id;
@@ -162,16 +154,16 @@ class EditController extends Controller
                 $firstName = explode(' ', $user->fullname)[0]; 
                 $lastTwoDigits = substr($user->teacher_number, -2); 
                 $username = $firstName . $lastTwoDigits;
-            
+    
                 $password = Str::random(8);
-            
+    
                 $user->username = $username;
                 $user->password = Hash::make($password);
                 $user->save();
-            
+    
                 Mail::to($user->email)->send(new sendTeacherEmail($username, $password));
             }
-            
+    
             return response()->json([
                 'status' => true,
                 'message' => 'Updated successfully',
@@ -184,7 +176,7 @@ class EditController extends Controller
             ], 500);
         }
     }
-
+    
     public function editPrincipal(Request $request, $id)
     {
         try {
@@ -227,7 +219,7 @@ class EditController extends Controller
             if ($request->has('nickname') && $request->nickname !== null) {
                 $user->nickname = $request->nickname;
             }
-            if ($request->has('birth_date') && $request->birht_date !== null) {
+            if ($request->has('birth_date') && $request->birth_date !== null) {
                 $user->birth_date = $request->birth_date;
             }
             if ($request->has('principal_number') && $request->principal_number !== null) {

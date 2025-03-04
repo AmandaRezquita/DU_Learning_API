@@ -12,6 +12,7 @@ use App\Models\Superadmin\Dashboard\SchoolClass;
 use App\Models\Superadmin\Dashboard\StudentClass;
 use App\Models\Superadmin\Dashboard\Subject;
 use App\Models\Superadmin\Dashboard\subjectaddTeacher;
+use App\Models\Superadmin\Dashboard\TimeSchedule;
 use App\Models\Teacher\Auth\Teacher;
 use App\Models\Teacher\Dashboard\AddMaterials;
 use App\Models\Teacher\Dashboard\AddTask;
@@ -349,4 +350,42 @@ class DeleteController extends Controller
             ], 500);
         }
     }
+
+    public function deleteTime(Request $request, $id)
+    {
+        try {
+            $time = TimeSchedule::find($id);
+    
+            if (!$time) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Time not found'
+                ], 200);
+            }
+    
+            $isUsed = Schedule::where('start_time', $id)
+                ->orWhere('end_time', $id)
+                ->exists();
+    
+            if ($isUsed) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Cannot delete time',
+                ], 422);
+            }
+    
+            $time->delete();
+    
+            return response()->json([
+                'status' => true,
+                'message' => 'Time deleted successfully',
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage(),
+            ], 500);
+        }
+    }
+    
 }
