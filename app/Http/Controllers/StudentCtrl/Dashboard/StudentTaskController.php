@@ -7,6 +7,7 @@ use App\Models\Student\Auth\Student;
 use App\Models\Student\Dashboard\StudentTask;
 use App\Models\Superadmin\Dashboard\ClassSubject;
 use App\Models\Superadmin\Dashboard\StudentClass;
+use App\Models\Superadmin\Dashboard\Subject;
 use App\Models\Teacher\Dashboard\AddTask;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -342,7 +343,7 @@ class StudentTaskController extends Controller
                 }
             }
 
-            $subject = ClassSubject::find($task->subject_id);
+            $subject = Subject::find($task->subject_id);
 
             return [
                 'id' => $task->id,
