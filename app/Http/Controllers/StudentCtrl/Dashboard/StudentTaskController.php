@@ -7,6 +7,7 @@ use App\Models\Student\Auth\Student;
 use App\Models\Student\Dashboard\StudentTask;
 use App\Models\Superadmin\Dashboard\ClassSubject;
 use App\Models\Superadmin\Dashboard\StudentClass;
+use App\Models\Superadmin\Dashboard\Subject;
 use App\Models\Teacher\Dashboard\AddTask;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -110,37 +111,37 @@ class StudentTaskController extends Controller
                 'file' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
                 'link' => 'nullable|url',
             ]);
-    
+
             if ($validate->fails()) {
                 return response()->json(['status' => false, 'errors' => $validate->errors()], 422);
             }
-    
+
             if (!$request->hasFile('file') && !$request->filled('link')) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Either a file or link must be provided',
                 ], 422);
             }
-    
+
             $filePath = null;
             $link = null;
-    
+
             if ($request->hasFile('file')) {
                 $fileName = $request->file('file')->getClientOriginalName();
-    
+
                 $fileName = str_replace(' ', '_', $fileName);
-    
+
                 $filePath = $request->file('file')->storeAs('file', $fileName, 'public');
-    
+
                 $fileUrl = url('storage/file/' . $fileName);
             } elseif ($request->filled('link')) {
                 $link = $request->link;
             }
-    
-            $timezone = $request->timezone ?? 'Asia/Jakarta';  
-    
+
+            $timezone = $request->timezone ?? 'Asia/Jakarta';
+
             $submittedAt = Carbon::now($timezone);
-    
+
             $studentTask = StudentTask::create([
                 'task_id' => $request->task_id,
                 'student_id' => auth()->id(),
@@ -149,7 +150,7 @@ class StudentTaskController extends Controller
                 'status' => 'Dikumpulkan',
                 'submitted_at' => $submittedAt,
             ]);
-    
+
             return response()->json([
                 'status' => true,
                 'message' => 'Task submitted successfully',
@@ -160,7 +161,7 @@ class StudentTaskController extends Controller
                     'file' => $studentTask->file ? "https://docs.google.com/gview?url=" . asset('storage/' . $studentTask->file) . "&embedded=true" : null,
                     'link' => $studentTask->link,
                     'status' => $studentTask->status,
-                    'submitted_at' => $submittedAt->translatedFormat('d F Y H:i'), 
+                    'submitted_at' => $submittedAt->translatedFormat('d F Y H:i'),
                 ]
             ], 200);
         } catch (\Exception $e) {
@@ -171,7 +172,7 @@ class StudentTaskController extends Controller
             ], 500);
         }
     }
-    
+
 
 
     public function StudentEditTask(Request $request, $id)
@@ -342,7 +343,7 @@ class StudentTaskController extends Controller
                 }
             }
 
-            $subject = ClassSubject::find($task->subject_id);
+            $subject = Subject::find($task->subject_id);
 
             return [
                 'id' => $task->id,
@@ -408,39 +409,63 @@ class StudentTaskController extends Controller
     public function getStudentAnswersByTaskId($task_id)
     {
         $task = AddTask::with('studentTasks.student')->find($task_id);
-    
+
         if (!$task) {
             return response()->json(['status' => false, 'message' => 'Task not found'], 200);
         }
-    
+
+        // Ambil semua siswa yang ada di kelas terkait dengan tugas ini
+        $students = Student::whereHas('studentClasses', function ($query) use ($task) {
+            $query->where('class_id', $task->class_id);
+        })->get();
+
         $responses = [];
-    
-        foreach ($task->studentTasks as $studentTask) {
-            $status = 'Belum Dinilai';
-    
-            if ($studentTask->score !== null) {
-                $status = 'Sudah Dinilai';
-            } elseif (now()->gt(Carbon::parse($task->due_date)->setTimeFromTimeString($task->hour))) {
-                $status = 'Kadaluarsa';
-            }
-    
-            $student = Student::find($studentTask->student_id);
-    
-            $responses[] = [
-                'student_id' => $studentTask->student_id ?? null,
-                'studentTask_id' => $studentTask->id ?? null,
-                'student_name' => $student->fullname ?? 'Unknown',
-                'answer' => $studentTask->file
+
+        foreach ($students as $student) {
+            // Cek apakah siswa ini sudah mengumpulkan tugas
+            $studentTask = $task->studentTasks->where('student_id', $student->id)->first();
+
+            if ($studentTask) {
+                if ($studentTask->score !== null) {
+                    $status = 'Sudah Dinilai';
+                } elseif (now()->gt(Carbon::parse($task->due_date)->setTimeFromTimeString($task->hour))) {
+                    $status = 'Kadaluarsa';
+                } else {
+                    $status = 'Belum Dinilai';
+                }
+
+                $answer = $studentTask->file
                     ? "https://docs.google.com/gview?url=" . asset('storage/' . $studentTask->file) . "&embedded=true"
-                    : ($studentTask->link ?? null),
+                    : ($studentTask->link ?? null);
+
+                $score = $studentTask->score ?? 0;
+            } else {
+                $status = 'Belum Mengumpulkan';
+                $answer = null;
+                $score = 0;
+            }
+
+            $responses[] = [
+                'student_id' => $student->id,
+                'studentTask_id' => $studentTask->id ?? null,
+                'student_name' => $student->fullname,
+                'answer' => $answer,
                 'status' => $status,
-                'score' => $studentTask->score ?? 0, 
+                'score' => $score,
             ];
         }
-    
+
+        // Custom sorting: "Belum Dinilai" paling atas, "Sudah Dinilai" paling bawah
+        usort($responses, function ($a, $b) {
+            $order = ['Belum Dinilai' => 1, 'Belum Mengumpulkan' => 2, 'Kadaluarsa' => 3, 'Sudah Dinilai' => 4];
+
+            return $order[$a['status']] <=> $order[$b['status']];
+        });
+
         return response()->json(['status' => true, 'data' => $responses], 200);
     }
-    
+
+
 
     public function getStudentAnswerByStudentTaskId($studentTask_id)
     {

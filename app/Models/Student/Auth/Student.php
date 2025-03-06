@@ -3,6 +3,7 @@
 namespace App\Models\Student\Auth;
 
 use App\Models\Role;
+use App\Models\Superadmin\Dashboard\StudentClass;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Model;
@@ -54,6 +55,12 @@ class Student extends Authenticatable
     {
         return $this->hasOne(StudentImage::class); 
     }
+
+    public function studentClasses()
+{
+    return $this->hasMany(StudentClass::class, 'student_id', 'id');
+}
+
     
 
     /**
