@@ -43,15 +43,10 @@ class ScheduleController extends Controller
         }
         $teacher_id = $subject->teacher_id;
 
-        $existingSchedule = Schedule::where('class_id', $request->class_id)
-            ->where('day_id', $request->day_id)
+        $existingSchedule = Schedule::where('day_id', $request->day_id)
             ->where(function ($query) use ($request) {
                 $query->whereBetween('start_time', [$request->start_time, $request->end_time])
-                    ->orWhereBetween('end_time', [$request->start_time, $request->end_time])
-                    ->orWhere(function ($query) use ($request) {
-                        $query->where('start_time', '<=', $request->start_time)
-                            ->where('end_time', '>=', $request->end_time);
-                    });
+                    ->orWhereBetween('end_time', [$request->start_time, $request->end_time]);
             })->exists();
 
         if ($existingSchedule) {
@@ -112,7 +107,6 @@ class ScheduleController extends Controller
             ],
         ], 200);
     }
-
 
 
     public function getSchedule($class_id)
@@ -195,6 +189,8 @@ class ScheduleController extends Controller
     }
     public function updateSchedule(Request $request, $id)
     {
+        $schedule = Schedule::find($id);
+
         $validate = Validator::make($request->all(), [
             'subject_id' => 'nullable|integer',
             'start_time' => 'nullable|integer',
@@ -209,72 +205,32 @@ class ScheduleController extends Controller
             ], 422);
         }
     
-        $schedule = Schedule::find($id);
     
         if (!$schedule) {
             return response()->json([
                 'status' => false,
                 'message' => 'Schedule not found',  
-            ], 404);
+            ], 200);
+        }
+
+        if ($request->has('subject_id')) {
+    
+            $schedule->subject_id = $request->subject_id;
         }
     
-        // Cek apakah start_time sudah dipakai di jadwal lain (tidak boleh sama)
+    
         if ($request->has('start_time')) {
-            $existingStartTime = Schedule::where('start_time', $request->start_time)
-                ->where('id', '!=', $id)
-                ->exists();
-    
-            if ($existingStartTime) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Start time sudah digunakan oleh jadwal lain',
-                ], 422);
-            }
-    
-            // Start time boleh sama dengan end time sebelumnya
-            $prevSchedule = Schedule::where('end_time', $request->start_time)->first();
-            if (!$prevSchedule && $request->start_time !== $schedule->end_time) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Start time harus sama dengan end time sebelumnya atau berbeda dengan start time lain',
-                ], 422);
-            }
     
             $schedule->start_time = $request->start_time;
         }
     
-        // Cek apakah end_time sudah dipakai di jadwal lain (tidak boleh sama)
         if ($request->has('end_time')) {
-            $existingEndTime = Schedule::where('end_time', $request->end_time)
-                ->where('id', '!=', $id)
-                ->exists();
-    
-            if ($existingEndTime) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'End time sudah digunakan oleh jadwal lain',
-                ], 422);
-            }
-    
-            // End time boleh sama dengan start time selanjutnya
-            $nextSchedule = Schedule::where('start_time', $request->end_time)->first();
-            if (!$nextSchedule && $request->end_time !== $schedule->start_time) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'End time harus sama dengan start time selanjutnya atau berbeda dengan end time lain',
-                ], 422);
-            }
     
             $schedule->end_time = $request->end_time;
         }
-    
-        if ($request->has('subject_id')) {
-            $schedule->subject_id = $request->subject_id;
-        }
-    
+ 
         $schedule->save();
     
-        // Ambil data untuk response
         $start_time = TimeSchedule::find($schedule->start_time);
         $end_time = TimeSchedule::find($schedule->end_time);
         $subject = Subject::find($schedule->subject_id);

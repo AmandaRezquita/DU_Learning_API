@@ -198,6 +198,8 @@ Route::group([
             Route::get('get-teacher-schedule', [TeacherSchedule::class, 'getTeacherSchedule']);
             Route::get('get-task-date/{class_id}', [TaskController::class, 'getTaskByDate']);
 
+            Route::get('get-all-task-list', [TaskController::class, 'getAllTasksByTeacher']);
+
             Route::post('create-material', [MaterialsController::class, 'addMaterials']);
             Route::get('material-list/{class_id}/{subject_id}', [MaterialsController::class, 'getMaterials']);
             Route::put('edit-material/{id}', [MaterialsController::class, 'editMaterials']);

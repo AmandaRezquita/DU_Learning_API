@@ -4,8 +4,13 @@ namespace App\Http\Controllers\TeacherCtrl\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Student\Dashboard\StudentTask;
+use App\Models\Superadmin\Dashboard\ClassSubject;
+use App\Models\Superadmin\Dashboard\SchoolClass;
+use App\Models\Superadmin\Dashboard\Subject;
+use App\Models\Teacher\Auth\Teacher;
 use App\Models\Teacher\Dashboard\AddTask;
 use DateTimeZone;
+use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Storage;
@@ -310,5 +315,48 @@ class TaskController extends Controller
             'data' => $response,
         ], 200);
     }
+
+    public function getAllTasksByTeacher(Request $request)
+{
+    try {
+        $user = auth()->user(); 
+
+        if (!$user || !$user instanceof Teacher) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized access',
+            ], 401);
+        }
+        
+        $teacherId = $user->id; 
+
+        $subjectIds = ClassSubject::where('teacher_id', $teacherId)
+            ->pluck('id')
+            ->toArray();
+
+        $tasks = AddTask::whereIn('subject_id', $subjectIds)->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Tasks retrieved successfully',
+            'data' => $tasks->map(function ($task) {
+                $className = SchoolClass::find($task->class_id);
+                return [
+                    'id' => $task->id,
+                    'subject_name' => optional(Subject::find($task->subject_id))->subject_name ?? 'null',
+                    'title' => $task->title,
+                    'date' => Carbon::parse($task->date)->translatedFormat('d F Y H:i'),
+                    'class_name'  => $className->class_name ?? 'null',
+                ];
+            }),
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Failed to retrieve tasks',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
 
 }
