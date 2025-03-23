@@ -17,6 +17,7 @@ use App\Http\Controllers\SuperadminCtrl\Dashboard\ClassSubjectController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\DeleteController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\DetailInforController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\EditController;
+use App\Http\Controllers\SuperadminCtrl\Dashboard\RaportController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\ScheduleController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\StudentaddClassController;
 use App\Http\Controllers\SuperadminCtrl\Dashboard\SubjectController;
@@ -78,6 +79,8 @@ Route::group([
             Route::put('edit-subject-class/{id}', [ClassSubjectController::class, 'updateSubject']);
             Route::put('edit-class/{id}', [ClassController::class, 'updateClass']);
 
+            Route::post('add-multiple-student', [StudentaddClassController::class, 'addMultipleStudent']);
+
             Route::post('create-subject-superadmin', [SubjectController::class, 'createSubject']);
             Route::get('get-subject-list-superadmin', [SubjectController::class, 'getSubject']);
             Route::put('edit-subject-superadmin/{id}', [SubjectController::class, 'editSubject']);
@@ -91,6 +94,10 @@ Route::group([
             Route::put('edit-schedule-time/{id}', [TimeController::class, 'editTime']);
             Route::delete('delete-schedule-time/{id}', [DeleteController::class, 'deleteTime']);
 
+            Route::post('create-student-raport', [RaportController::class, 'createRaport']);
+            Route::get('get-student-list-raport/{class_id}', [RaportController::class, 'getStudentListRaport']);
+            Route::put('update-student-raport/{id}', [RaportController::class, 'UpdateRaport']);
+            Route::delete('delete-student-raport/{id}', [RaportController::class, 'DeleteRaport']);
 
 
             Route::get('get-days', [ScheduleController::class, 'getDays']);
@@ -155,6 +162,8 @@ Route::group([
             Route::get('get-task-filter/{subject_id}/{status}', [StudentTaskController::class, 'StudentGetTaskByStatus']);
             Route::get('get-task-id/{task_id}', [StudentTaskController::class, 'StudentGetTaskById']);
             Route::get('get-material/{id}', [StudentMaterialController::class, 'getMaterialById']);
+
+            Route::get('get-raport', [RaportController::class, 'getStudentRaports']);
 
         });
 

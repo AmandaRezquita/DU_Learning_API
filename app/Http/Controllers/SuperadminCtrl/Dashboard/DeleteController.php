@@ -326,30 +326,42 @@ class DeleteController extends Controller
     }
 
     public function deleteSubject(Request $request, $id)
-    {
-        try {
-            $subject = Subject::find($id);
+{
+    try {
+        $subject = Subject::find($id);
 
-            if (!$subject) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Task not found'
-                ], 200);
-            }
-
-            $subject->delete();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Subject deleted successfully',
-            ], 200);
-        } catch (\Throwable $th) {
+        if (!$subject) {
             return response()->json([
                 'status' => false,
-                'message' => $th->getMessage(),
-            ], 500);
+                'message' => 'Subject not found'
+            ], 404);
         }
+
+        $subject->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Subject deleted successfully',
+        ], 200);
+    } catch (\Illuminate\Database\QueryException $e) {
+        if ($e->getCode() == 23000) { 
+            return response()->json([
+                'status' => false,
+                'message' => 'Mata pelajaran ini tidak dapat dihapus karena masih digunakan dalam data lain.'
+            ], 422);
+        }
+        return response()->json([
+            'status' => false,
+            'message' => 'Database error: ' . $e->getMessage(),
+        ], 500);
+    } catch (\Throwable $th) {
+        return response()->json([
+            'status' => false,
+            'message' => 'An error occurred: ' . $th->getMessage(),
+        ], 500);
     }
+}
+
 
     public function deleteTime(Request $request, $id)
     {

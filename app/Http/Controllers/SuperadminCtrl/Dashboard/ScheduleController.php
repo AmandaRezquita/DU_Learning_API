@@ -41,40 +41,6 @@ class ScheduleController extends Controller
                 'message' => 'Subject or teacher not found',
             ], 200);
         }
-        $teacher_id = $subject->teacher_id;
-
-        $existingSchedule = Schedule::where('day_id', $request->day_id)
-            ->where(function ($query) use ($request) {
-                $query->whereBetween('start_time', [$request->start_time, $request->end_time])
-                    ->orWhereBetween('end_time', [$request->start_time, $request->end_time]);
-            })->exists();
-
-        if ($existingSchedule) {
-            return response()->json([
-                'status' => false,
-                'message' => 'A schedule already exists for this class at the given time',
-            ], 422);
-        }
-
-        $teacherSchedule = Schedule::whereHas('subject', function ($query) use ($teacher_id) {
-            $query->where('teacher_id', $teacher_id);
-        })
-            ->where('day_id', $request->day_id)
-            ->where(function ($query) use ($request) {
-                $query->whereBetween('start_time', [$request->start_time, $request->end_time])
-                    ->orWhereBetween('end_time', [$request->start_time, $request->end_time])
-                    ->orWhere(function ($query) use ($request) {
-                        $query->where('start_time', '<=', $request->start_time)
-                            ->where('end_time', '>=', $request->end_time);
-                    });
-            })->exists();
-
-        if ($teacherSchedule) {
-            return response()->json([
-                'status' => false,
-                'message' => 'The teacher is already scheduled to teach at this time',
-            ], 422);
-        }
 
         $schedule = Schedule::create([
             'class_id' => $request->class_id,
@@ -113,7 +79,7 @@ class ScheduleController extends Controller
     {
         try {
             $schedules = Schedule::where('class_id', $class_id)
-                ->with(['day', 'subject.teacher', 'subject.subject'])
+                ->with(['day', 'subject.teacher', 'subject.subject', 'subject'])
                 ->get();
 
             $daysOfWeek = [
@@ -136,9 +102,12 @@ class ScheduleController extends Controller
 
                 $groupedSchedules[$dayName][] = [
                     'id' => $schedule->id,
+                    'subject_id' => $schedule->subject->id ?? 'null',
                     'subject' => $schedule->subject->subject->subject_name ?? 'Unknown Subject',
                     'teacher' => $schedule->subject->teacher->fullname ?? 'Teacher not assigned',
+                    'start_time_id' => $start_time->id ?? 'null',
                     'start_time' => $start_time->time  ?? 'null',
+                    'end_time_id' => $end_time->id  ?? 'null',
                     'end_time' => $end_time->time  ?? 'null',
                 ];
             }
