@@ -343,12 +343,13 @@ class StudentTaskController extends Controller
                 }
             }
 
-            $subject = Subject::find($task->subject_id);
+            $subject = ClassSubject::find($task->subject_id);
+            $subjectName = Subject::find($subject->subject_id);
 
             return [
                 'id' => $task->id,
                 'title' => $task->title,
-                'subject' => $subject ? $subject->subject_name : 'Tidak Diketahui',
+                'subject' => $subject ? $subjectName->subject_name : 'Tidak Diketahui',
                 'status' => $taskStatus,
                 'info' => $info,
             ];

@@ -16,8 +16,7 @@ class SearchTeacherController extends Controller
             $search = $request->query('search');
             $teacherList = Teacher::where(function ($query) use ($search) {
                 $query->where('fullname', 'LIKE', '%' . $search . '%')
-                    ->orWhere('nickname', 'LIKE', '%' . $search . '%')
-                    ->orWhere('email', 'LIKE', '%' . $search . '%');
+                    ->orWhere('nickname', 'LIKE', '%' . $search . '%');
             })->get();
 
             $teachersData = [];
@@ -26,6 +25,7 @@ class SearchTeacherController extends Controller
                 $image = TeacherImage::find($teacher->teacher_image_id);
 
                 $teachersData[] = [
+                    'teacher_id' => $teacher->id,
                     'fullname' => $teacher->fullname,
                     'nickname' => $teacher->nickname,
                     'username' => $teacher->nickname,

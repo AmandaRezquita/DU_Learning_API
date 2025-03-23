@@ -18,8 +18,7 @@ class SearchStudentController extends Controller
             $studentList = Student::where(function ($query) use ($search) {
                 $query->where('fullname', 'LIKE', '%' . $search . '%')
                     ->orWhere('nickname', 'LIKE', '%' . $search . '%')
-                    ->orWhere('student_number', 'LIKE', '%' . $search . '%')
-                    ->orWhere('email', 'LIKE', '%' . $search . '%');
+                    ->orWhere('student_number', 'LIKE', '%' . $search . '%');
             })->get();
 
             $studentsData = [];
@@ -29,6 +28,7 @@ class SearchStudentController extends Controller
                 $image = StudentImage::find($student->student_image_id);
 
                 $studentsData[] = [
+                    'student_id' => $student->id,
                     'fullname' => $student->fullname,
                     'nickname' => $student->nickname,
                     'username' => $student->nickname,  

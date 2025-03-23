@@ -21,14 +21,14 @@ class TeacherSchedule extends Controller
             $query->where('teacher_id', $teacher_id);
         })
             ->where('day_id', $todayDayId)
-            ->with(['class', 'subject.subject'])
+            ->with(['class', 'subject.subject', 'subject'])
             ->get();
 
         $response = $classList->map(function ($schedule) {
             return [
-                'id' => $schedule->id,
                 'class_id' => $schedule->class->id ?? null,
                 'class_name' => $schedule->class->class_name ?? null,
+                'subject_id' => $schedule->subject->id ?? null,
                 'subject_name' => $schedule->subject->subject->subject_name ?? null,
             ];
         });
@@ -53,6 +53,7 @@ class TeacherSchedule extends Controller
                 'id' => $class->id,
                 'class_id' => $class->class->id ?? null,
                 'class_name' => $class->class->class_name ?? null,
+                'subject_id' => $class->id ?? null,
                 'subject_name' => $class->subject->subject_name,
             ];
         });
@@ -84,6 +85,7 @@ class TeacherSchedule extends Controller
             return [
                 'id' => $schedule->id,
                 'class_name' => $schedule->class->class_name ?? null,
+                'subject_id' => $schedule->subject->id ?? null,
                 'subject_name' => $schedule->subject->subject->subject_name ?? null,
                 'start_time' => $start_time->time  ?? 'null',
                 'end_time' => $end_time->time  ?? 'null',

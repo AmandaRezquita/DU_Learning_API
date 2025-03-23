@@ -29,7 +29,7 @@ class StudentController extends Controller
                 $image = StudentImage::find($student->student_image_id);
 
                 return [
-                    'id' => $student->id,
+                    'student_id' => $student->id,
                     'fullname' => $student->fullname,
                     'student_number' => $student->student_number,
                     'phone_number' => $student->phone_number,

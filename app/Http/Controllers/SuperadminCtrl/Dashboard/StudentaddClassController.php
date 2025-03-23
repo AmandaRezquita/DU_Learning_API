@@ -40,7 +40,7 @@ class StudentaddClassController extends Controller
                     'message' => 'Student already exists in this class',
                 ], 422);
             }
-            
+
             $data = [
                 'class_id' => $request->class_id,
                 'student_id' => $request->student_id,
@@ -62,26 +62,83 @@ class StudentaddClassController extends Controller
         }
     }
 
-    public function getStudent($class_id){
+    public function addMultipleStudent(Request $request)
+    {
+        try {
+            $validate = Validator::make(
+                $request->all(),
+                [
+                    'class_id' => 'required|integer',
+                    'student_ids' => 'required|array',
+                    'student_ids.*' => 'required|integer|exists:students,id',
+                ]
+            );
 
-        
-        $students = StudentClass::where('class_id', $class_id)
-        ->with('student')
-        ->get();
-   
-    $response = [];
-    foreach ($students as $s) {
+            if ($validate->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validate->errors()
+                ], 422);
+            }
 
-        $image = StudentImage::find($s->student->student_image_id);
+            $classId = $request->class_id;
+            $studentIds = $request->student_ids;
+            $addedStudents = [];
+            $alreadyExists = [];
 
-        $response[] = [
-            'id' => $s->id,
-            'student_id' => $s->student_id,
-            'name' => $s->student ? $s->student->fullname : Null,
-            'nis' => $s->student ? $s->student->student_number : Null,
-            'image' => $image ? $image->image : null,
-        ];
+            foreach ($studentIds as $studentId) {
+                $exists = StudentClass::where('class_id', $classId)
+                    ->where('student_id', $studentId)
+                    ->exists();
+
+                if ($exists) {
+                    $alreadyExists[] = $studentId;
+                } else {
+                    $addedStudents[] = StudentClass::create([
+                        'class_id' => $classId,
+                        'student_id' => $studentId,
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Students processed successfully',
+                'added' => $addedStudents,
+                'already_exists' => $alreadyExists,
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred',
+                'errors' => $th->getMessage(),
+            ], 500);
+        }
     }
+
+
+    public function getStudent($class_id)
+    {
+
+
+        $students = StudentClass::where('class_id', $class_id)
+            ->with('student')
+            ->get();
+
+        $response = [];
+        foreach ($students as $s) {
+
+            $image = StudentImage::find($s->student->student_image_id);
+
+            $response[] = [
+                'id' => $s->id,
+                'student_id' => $s->student_id,
+                'name' => $s->student ? $s->student->fullname : Null,
+                'nis' => $s->student ? $s->student->student_number : Null,
+                'image' => $image ? $image->image : null,
+            ];
+        }
         return response()->json([
             'status' => true,
             'message' => 'Successfully retrieved subjects and teachers',
@@ -89,27 +146,28 @@ class StudentaddClassController extends Controller
         ], 200);
     }
 
-    public function getStudentBySubject($class_id){
+    public function getStudentBySubject($class_id)
+    {
 
-        
+
         $students = StudentClass::where('class_id', $class_id)
-        ->with('student')
-        ->get();
-   
-    $response = [];
-    foreach ($students as $s) {
+            ->with('student')
+            ->get();
 
-        $image = StudentImage::find($s->student->student_image_id);
+        $response = [];
+        foreach ($students as $s) {
 
-        $response[] = [
-            'id' => $s->id,
-            'student_id' => $s->student_id,
-            'name' => $s->student ? $s->student->fullname : Null,
-            'phone_number' => $s->student ? $s->student->phone_number : Null,
-            'nis' => $s->student ? $s->student->student_number : Null,
-            'image' => $image ? $image->image : null,
-        ];
-    }
+            $image = StudentImage::find($s->student->student_image_id);
+
+            $response[] = [
+                'id' => $s->id,
+                'student_id' => $s->student_id,
+                'name' => $s->student ? $s->student->fullname : Null,
+                'phone_number' => $s->student ? $s->student->phone_number : Null,
+                'nis' => $s->student ? $s->student->student_number : Null,
+                'image' => $image ? $image->image : null,
+            ];
+        }
         return response()->json([
             'status' => true,
             'message' => 'Successfully retrieved subjects and teachers',
@@ -117,16 +175,17 @@ class StudentaddClassController extends Controller
         ], 200);
     }
 
-    public function availableStudent() {
+    public function availableStudent()
+    {
         $students = Student::whereNotIn('id', function ($query) {
             $query->select('student_id')
-                  ->from('student_classes');
+                ->from('student_classes');
         })->get();
-    
+
         $response = [];
         foreach ($students as $student) {
             $image = StudentImage::find($student->student_image_id);
-    
+
             $response[] = [
                 'id' => $student->id,
                 'student_id' => $student->id,
@@ -135,7 +194,7 @@ class StudentaddClassController extends Controller
                 'image' => $image ? $image->image : null,
             ];
         }
-    
+
         return response()->json([
             'status' => true,
             'message' => 'Successfully retrieved students not in any class',

@@ -29,7 +29,7 @@ class TeacherController extends Controller
             $image = TeacherImage::find($teacher->teacher_image_id);
 
             return [
-                'id' => $teacher->id,
+                'teacher_id' => $teacher->id,
                 'fullname' => $teacher->fullname,
                 'teacher_number' => $teacher->teacher_number,
                 'image' => $image ? $image->image : null,
